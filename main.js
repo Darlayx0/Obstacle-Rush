@@ -66,13 +66,13 @@ let modConfig = {};
 // Mode Configurations
 const defaultGrowth = 0.99;
 const MODES = {
-    obstacle: { label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    laser: { label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', lives: 1, obsSpawn: 0, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    chaos: { label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles (rintangan) maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: 0.95, lasGrowth: 0.95, lasWarn: 1.0, saveScore: true },
-    sluggish: { label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan strategis. Obstacles bergerak lambat namun kemunculan beruntun, perlahan akan menutupi layar.', lives: 1, obsSpawn: 0.3, lasSpawn: 0, speed: 30, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    lightning: { label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 1.0, lasSpawn: 0, speed: 450, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    stalker: { label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    custom: { label: 'Custom', icon: '⚙️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
+    obstacle: { category: 'Klasik', label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    laser: { category: 'Klasik', label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', lives: 1, obsSpawn: 0, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    chaos: { category: 'Klasik', label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles (rintangan) maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: 0.95, lasGrowth: 0.95, lasWarn: 1.0, saveScore: true },
+    sluggish: { category: 'Spesial', label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan strategis. Obstacles bergerak lambat namun kemunculan beruntun, perlahan akan menutupi layar.', lives: 1, obsSpawn: 0.3, lasSpawn: 0, speed: 30, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    lightning: { category: 'Spesial', label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 1.0, lasSpawn: 0, speed: 1000, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    stalker: { category: 'Spesial', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    custom: { category: 'Eksperimental', label: 'Custom', icon: '⚙️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
 // Entities arrays
@@ -274,9 +274,38 @@ function init() {
     document.getElementById('resumeBtn').addEventListener('click', togglePause);
     document.getElementById('pauseMenuBtn').addEventListener('click', showMainMenu);
 
-    // Build interactive mode UI
+    document.getElementById('showProgressBtn').addEventListener('click', () => {
+        renderProgressList();
+        document.getElementById('progressModal').classList.remove('hidden');
+    });
+    document.getElementById('closeProgressBtn').addEventListener('click', () => {
+        document.getElementById('progressModal').classList.add('hidden');
+    });
+    document.getElementById('resetAllProgressBtn').addEventListener('click', () => {
+        for (const key of Object.keys(MODES)) {
+            localStorage.removeItem(`obstacleRushHigh_${key}`);
+        }
+        renderProgressList();
+        loadHighScore();
+    });
+
+    document.getElementById('btnPresetDefault').addEventListener('click', () => applyPreset('obstacle'));
+    document.getElementById('btnPresetObs').addEventListener('click', () => applyPreset('obstacle'));
+    document.getElementById('btnPresetLas').addEventListener('click', () => applyPreset('laser'));
+    document.getElementById('btnPresetStk').addEventListener('click', () => applyPreset('stalker'));
+
+    // Build interactive mode UI hierarchically
     modeList.innerHTML = '';
+    let currentCat = '';
     for (const [key, mode] of Object.entries(MODES)) {
+        if (mode.category !== currentCat) {
+            currentCat = mode.category;
+            const catHeader = document.createElement('div');
+            catHeader.className = 'mode-category';
+            catHeader.textContent = currentCat;
+            modeList.appendChild(catHeader);
+        }
+
         const card = document.createElement('div');
         card.className = 'mode-card';
         card.dataset.mode = key;
@@ -356,6 +385,46 @@ function setMode(modeKey) {
         highScoreContainer.classList.remove('hidden');
         loadHighScore();
     }
+}
+
+function applyPreset(presetMode) {
+    const mode = MODES[presetMode];
+    if (!mode) return;
+
+    rngLives.value = 1; // Default back to 1 life usually for classic presets
+    valLives.textContent = rngLives.value;
+
+    if (mode.obsSpawn > 0) {
+        togObs.checked = true;
+        obsConfig.classList.remove('hidden-content');
+        rngObsSpawn.value = mode.obsSpawn;
+        valObsSpawn.textContent = mode.obsSpawn.toFixed(2) + 's';
+    } else {
+        togObs.checked = false;
+        obsConfig.classList.add('hidden-content');
+    }
+
+    rngSpeed.value = mode.speed;
+    valSpeed.textContent = mode.speed;
+    rngTrack.value = mode.track;
+    valTrack.textContent = mode.track.toFixed(1) + 'x';
+    rngObsGrowth.value = mode.obsGrowth || 0.99;
+    valObsGrowth.textContent = parseFloat(rngObsGrowth.value).toFixed(2) + 'x';
+
+    if (mode.lasSpawn > 0) {
+        togLaser.checked = true;
+        laserConfig.classList.remove('hidden-content');
+        rngLaserSpawn.value = mode.lasSpawn;
+        valLaserSpawn.textContent = mode.lasSpawn.toFixed(2) + 's';
+    } else {
+        togLaser.checked = false;
+        laserConfig.classList.add('hidden-content');
+    }
+
+    rngLaserWarn.value = mode.lasWarn || 1.0;
+    valLaserWarn.textContent = parseFloat(rngLaserWarn.value).toFixed(2) + 's';
+    rngLaserGrowth.value = mode.lasGrowth || 0.99;
+    valLaserGrowth.textContent = parseFloat(rngLaserGrowth.value).toFixed(2) + 'x';
 }
 
 function buildModConfig() {
@@ -451,6 +520,12 @@ function startGame() {
     invulnerableTimer = 0;
     updateLivesDisplay();
 
+    if (maxLives <= 1) {
+        document.querySelector('.lives-display').classList.add('hidden');
+    } else {
+        document.querySelector('.lives-display').classList.remove('hidden');
+    }
+
     mouse.x = canvas.width / 2;
     mouse.y = canvas.height / 2;
     player = new Player();
@@ -533,6 +608,40 @@ function resetHighScore() {
         localStorage.removeItem(getStoreKey());
         loadHighScore();
     }
+}
+
+function renderProgressList() {
+    const listContainer = document.getElementById('progressList');
+    listContainer.innerHTML = '';
+
+    for (const [key, mode] of Object.entries(MODES)) {
+        if (!mode.saveScore) continue;
+        const storeKey = `obstacleRushHigh_${key}`;
+        const high = parseFloat(localStorage.getItem(storeKey)) || 0;
+
+        const item = document.createElement('div');
+        item.className = 'progress-item';
+
+        item.innerHTML = `
+            <div class="mode-name">
+                <span class="mode-icon">${mode.icon}</span> ${mode.label}
+            </div>
+            <div class="progress-actions">
+                <span class="score-val">${formatTime(high)}</span>
+                <button class="delete-single-btn" data-mode="${key}" title="Hapus Skor">✕</button>
+            </div>
+        `;
+        listContainer.appendChild(item);
+    }
+
+    listContainer.querySelectorAll('.delete-single-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const m = e.target.dataset.mode;
+            localStorage.removeItem(`obstacleRushHigh_${m}`);
+            renderProgressList(); // Refresh modal
+            if (currentMode === m) loadHighScore(); // Sync active view UI
+        });
+    });
 }
 
 function pointLineDistance(px, py, x1, y1, x2, y2) {

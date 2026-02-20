@@ -62,6 +62,102 @@ body {
   display: none !important;
 }
 
+.text-sm {
+  font-size: 0.875rem;
+}
+
+/* Modal Progress Styles */
+.modal-content {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 24px;
+  min-width: 500px;
+  max-width: 90vw;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.progress-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.progress-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.progress-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progress-item .mode-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-item .score-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-item .progress-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.delete-single-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent-red);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  padding: 4px;
+}
+
+.delete-single-btn:hover {
+  opacity: 1;
+}
+
+/* Category Headers */
+.mode-category {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 20px;
+  margin-bottom: 8px;
+  padding-left: 8px;
+  font-weight: 700;
+}
+
+.mode-category:first-of-type {
+  margin-top: 0;
+}
+
+/* Utilities */
 .glassmorphism {
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
@@ -295,6 +391,31 @@ body {
   overflow-y: auto;
 }
 
+.preset-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.preset-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.preset-btn:hover {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--text-main);
+  border-color: rgba(6, 182, 212, 0.5);
+}
+
 .custom-panel::-webkit-scrollbar {
   width: 6px;
 }
@@ -495,6 +616,25 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .danger-btn:hover {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.8);
+}
+
+.ghost-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  margin-right: auto;
+}
+
+.ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
 button {

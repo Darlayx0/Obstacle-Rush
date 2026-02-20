@@ -55,22 +55,19 @@
         </div>
 
         <div id="customPanel" class="custom-panel hidden">
-          <!-- Main Engine Sliders -->
-          <div class="settings-row double-col">
-            <div class="setting-group">
-              <label>Sisa Nyawa: <span id="valLives" class="val-badge">1</span></label>
-              <input type="range" id="rngLives" min="1" max="10" step="1" value="1">
-            </div>
-            <div class="setting-group">
-              <label>Kec. Dasar: <span id="valSpeed" class="val-badge">150</span></label>
-              <input type="range" id="rngSpeed" min="50" max="800" step="10" value="150">
-            </div>
+          <!-- Preset Buttons -->
+          <div class="preset-group">
+            <button id="btnPresetDefault" class="preset-btn" title="Kembalikan ke awal">⟲ Default</button>
+            <button id="btnPresetObs" class="preset-btn">🔴 Classic</button>
+            <button id="btnPresetLas" class="preset-btn">💥 Lasers</button>
+            <button id="btnPresetStk" class="preset-btn">👁️ Stalker</button>
           </div>
 
-          <div class="settings-row double-col">
+          <!-- Main Engine Sliders -->
+          <div class="settings-row">
             <div class="setting-group">
-              <label>Pelacakan (Tracking): <span id="valTrack" class="val-badge">0x</span></label>
-              <input type="range" id="rngTrack" min="0" max="5" step="0.1" value="0">
+              <label>Sisa Nyawa Pemain: <span id="valLives" class="val-badge">1</span></label>
+              <input type="range" id="rngLives" min="1" max="10" step="1" value="1">
             </div>
           </div>
 
@@ -89,6 +86,14 @@
                 <input type="range" id="rngObsSpawn" min="0.05" max="3.00" step="0.01" value="0.5">
               </div>
               <div class="setting-group">
+                <label>Kec. Dasar Jauh/Dekat: <span id="valSpeed" class="val-badge">150</span></label>
+                <input type="range" id="rngSpeed" min="50" max="1500" step="10" value="150">
+              </div>
+              <div class="setting-group">
+                <label>Pelacakan Magnetik: <span id="valTrack" class="val-badge">0x</span></label>
+                <input type="range" id="rngTrack" min="0" max="5" step="0.1" value="0">
+              </div>
+              <div class="setting-group">
                 <label>Prtmbhn. Kesulitan: <span id="valObsGrowth" class="val-badge">0.99x</span></label>
                 <input type="range" id="rngObsGrowth" min="0.90" max="1.00" step="0.01" value="0.99">
               </div>
@@ -98,7 +103,7 @@
           <!-- Lasers Block -->
           <div class="engine-block">
             <div class="block-header">
-              <span class="block-title">💥 Lasers</span>
+              <span class="block-title">💥 Lasers Peringatan</span>
               <label class="toggle-switch">
                 <input type="checkbox" id="togLaser">
                 <span class="slider round"></span>
@@ -110,7 +115,7 @@
                 <input type="range" id="rngLaserSpawn" min="0.10" max="5.00" step="0.01" value="1.0">
               </div>
               <div class="setting-group">
-                <label>Durasi Peringatan: <span id="valLaserWarn" class="val-badge">1.00s</span></label>
+                <label>Durasi Peringatan Awal: <span id="valLaserWarn" class="val-badge">1.00s</span></label>
                 <input type="range" id="rngLaserWarn" min="0.20" max="3.00" step="0.01" value="1.0">
               </div>
               <div class="setting-group">
@@ -130,8 +135,26 @@
             <button id="startBtn" class="primary-btn pulse">MAIN SEKARANG <span class="arrow">→</span></button>
           </div>
           <div class="action-bottom">
+            <button id="showProgressBtn" class="ghost-btn text-sm">📊 Lihat Semua Progres</button>
             <button id="resetScoreBtn" class="danger-btn text-sm">Hapus Skor Mode Ini</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress / High Scores Modal -->
+    <div id="progressModal" class="menu-panel glassmorphism hidden">
+      <div class="modal-content">
+        <h2 class="title">PAPAN PROGRES</h2>
+        <p class="subtitle" style="margin-bottom: 24px;">Catatan Waktu Bertahan Terbaik Anda</p>
+
+        <div id="progressList" class="progress-list">
+          <!-- Dynamically populated by JS based on scores -->
+        </div>
+
+        <div class="modal-actions" style="margin-top: 32px; display: flex; justify-content: space-between;">
+          <button id="resetAllProgressBtn" class="danger-btn">🗑️ Hapus Semua Progres</button>
+          <button id="closeProgressBtn" class="secondary-btn">Kembali <span class="arrow">↩</span></button>
         </div>
       </div>
     </div>
