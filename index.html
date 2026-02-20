@@ -33,7 +33,7 @@
       <div class="menu-left">
         <div class="menu-header">
           <h1 class="title">OBSTACLE<br><span class="accent">RUSH</span></h1>
-          <p class="subtitle">Select Your Challenge</p>
+          <p class="subtitle">Pilih Mode Bermain</p>
         </div>
         <div class="mode-list" id="modeList">
           <!-- Dynamically populated by JS -->
@@ -43,7 +43,11 @@
       <div class="menu-right">
         <div class="mode-details">
           <h2 id="infoTitle" class="mode-title">Obstacles</h2>
-          <p id="infoDesc" class="mode-desc">Dodge falling red circles as they gradually speed up over time.</p>
+          <p id="infoDesc" class="mode-desc">Hindari lingkaran merah yang berjatuhan. Kecepatan mereka akan terus
+            meningkat seiring waktu.</p>
+          <div id="modeStats" class="mode-stats">
+            <!-- Dynamically populated stats -->
+          </div>
         </div>
 
         <div id="customPanel" class="custom-panel hidden">
@@ -67,12 +71,12 @@
 
         <div class="action-footer">
           <div class="high-score-container" id="highScoreContainer">
-            <span class="label">Best Time</span>
+            <span class="label">Waktu Terbaik</span>
             <span id="highScoreText" class="value highScoreValue">0,00s</span>
           </div>
           <div class="btn-group">
-            <button id="startBtn" class="primary-btn pulse">PLAY NOW <span class="arrow">→</span></button>
-            <button id="resetScoreBtn" class="secondary-btn icon-btn" title="Reset Progress">✕</button>
+            <button id="startBtn" class="primary-btn pulse">MAIN SEKARANG <span class="arrow">→</span></button>
+            <button id="resetScoreBtn" class="secondary-btn icon-btn" title="Reset Skor">✕</button>
           </div>
         </div>
       </div>
@@ -81,8 +85,8 @@
     <!-- Pause Menu -->
     <div id="pauseMenu" class="menu-panel glassmorphism hidden">
       <h1 class="title">GAME <span class="accent">PAUSED</span></h1>
-      <button id="resumeBtn" class="primary-btn">RESUME</button>
-      <button id="pauseMenuBtn" class="secondary-btn">Main Menu</button>
+      <button id="resumeBtn" class="primary-btn">LANJUTKAN</button>
+      <button id="pauseMenuBtn" class="secondary-btn">MENU UTAMA</button>
     </div>
 
     <!-- Game Over Menu -->
@@ -90,16 +94,16 @@
       <h1 class="title loss-title">GAME <span class="accent-red">OVER</span></h1>
       <div class="stats-container">
         <div class="stat-box">
-          <span class="label">Survived</span>
+          <span class="label">BERTAHAN</span>
           <span id="finalScoreText" class="value">0,00s</span>
         </div>
         <div class="stat-box">
-          <span class="label">Best</span>
+          <span class="label">TERBAIK</span>
           <span id="gameOverHighScoreText" class="value highScoreValue">0,00s</span>
         </div>
       </div>
-      <button id="restartBtn" class="primary-btn">TRY AGAIN</button>
-      <button id="menuBtn" class="secondary-btn">Main Menu</button>
+      <button id="restartBtn" class="primary-btn">COBA LAGI</button>
+      <button id="menuBtn" class="secondary-btn">MENU UTAMA</button>
     </div>
   </div>
 

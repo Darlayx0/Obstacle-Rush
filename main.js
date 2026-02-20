@@ -16,6 +16,7 @@ const highScoreNodes = document.querySelectorAll('.highScoreValue');
 const modeList = document.getElementById('modeList');
 const infoTitle = document.getElementById('infoTitle');
 const infoDesc = document.getElementById('infoDesc');
+const modeStats = document.getElementById('modeStats');
 
 const customPanel = document.getElementById('customPanel');
 const highScoreContainer = document.getElementById('highScoreContainer');
@@ -43,13 +44,13 @@ let modConfig = {};
 
 // Mode Configurations
 const MODES = {
-    obstacle: { label: 'Obstacles', icon: '🔴', desc: 'The classic experience. Dodge falling red circles as they gradually speed up over time.', obsSpawn: 0.5, lasSpawn: 0, speed: 150, track: 0, saveScore: true },
-    laser: { label: 'Lasers', icon: '💥', desc: 'Deadly edge-to-edge laser beams. Watch for the transparent warnings before they activate!', obsSpawn: 0, lasSpawn: 1.0, speed: 150, track: 0, saveScore: true },
-    chaos: { label: 'Chaos', icon: '🔥', desc: 'Absolute mayhem. Both obstacles and lasers will spawn simultaneously to test your reflexes.', obsSpawn: 0.5, lasSpawn: 1.5, speed: 150, track: 0, saveScore: true },
-    sluggish: { label: 'Sluggish (Siput)', icon: '🐌', desc: 'A slow-paced challenge. Obstacles move very slowly but cover the screen over time.', obsSpawn: 2.0, lasSpawn: 0, speed: 50, track: 0, saveScore: true },
-    lightning: { label: 'Lightning (Fast)', icon: '⚡', desc: 'Blink and you lose. Obstacles move incredibly fast with a high spawn rate.', obsSpawn: 0.2, lasSpawn: 0, speed: 350, track: 0, saveScore: true },
-    stalker: { label: 'Stalker', icon: '👁️', desc: 'They are watching you. Obstacles will slowly curve and track your cursor.', obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 0.5, saveScore: true },
-    custom: { label: 'Custom', icon: '⚙️', desc: 'Tune the physics engine manually using sliders. High scores will not be saved here.', saveScore: false }
+    obstacle: { label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', obsSpawn: 0.5, lasSpawn: 0, speed: 150, track: 0, saveScore: true },
+    laser: { label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', obsSpawn: 0, lasSpawn: 1.0, speed: 150, track: 0, saveScore: true },
+    chaos: { label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles (rintangan) maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', obsSpawn: 0.5, lasSpawn: 1.5, speed: 150, track: 0, saveScore: true },
+    sluggish: { label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan lambat dan strategis. Obstacles bergerak sangat lambat, dan memiliki tingkat kemunculan yang jauh lebih rendah, namun perlahan akan menutupi layar.', obsSpawn: 3.0, lasSpawn: 0, speed: 30, track: 0, saveScore: true },
+    lightning: { label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa dengan tingkat kemunculan yang sangat intensif.', obsSpawn: 0.1, lasSpawn: 0, speed: 450, track: 0, saveScore: true },
+    stalker: { label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 0.5, saveScore: true },
+    custom: { label: 'Custom', icon: '⚙️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
 // Entities arrays
@@ -288,6 +289,21 @@ function setMode(modeKey) {
     const mode = MODES[modeKey];
     infoTitle.textContent = mode.label;
     infoDesc.textContent = mode.desc;
+
+    // Render Mode Config Stats for transparency
+    modeStats.innerHTML = '';
+    if (!isCustom) {
+        if (mode.obsSpawn > 0) {
+            modeStats.innerHTML += `<div class="stat-pill">⏱️ Tingkat Kemunculan Rintangan: ${mode.obsSpawn.toFixed(1)}s</div>`;
+            modeStats.innerHTML += `<div class="stat-pill">💨 Kecepatan Dasar: ${mode.speed}</div>`;
+        }
+        if (mode.lasSpawn > 0) {
+            modeStats.innerHTML += `<div class="stat-pill">💥 Tingkat Kemunculan Laser: ${mode.lasSpawn.toFixed(1)}s</div>`;
+        }
+        if (mode.track > 0) {
+            modeStats.innerHTML += `<div class="stat-pill">🎯 Pelacakan Magnetik: ${mode.track}x</div>`;
+        }
+    }
 
     if (isCustom) {
         customPanel.classList.remove('hidden');
