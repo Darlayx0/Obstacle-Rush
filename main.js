@@ -58,6 +58,10 @@ let lastTime = 0;
 let timeSurvived = 0; // in seconds
 let isPlaying = false;
 let isPaused = false;
+
+// Bot tracking
+let botVx = 0;
+let botVy = 0;
 let mouse = { x: canvas.width / 2 || 0, y: canvas.height / 2 || 0 };
 
 let playerLives = 1;
@@ -288,7 +292,6 @@ function init() {
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('restartBtn').addEventListener('click', startGame);
     document.getElementById('menuBtn').addEventListener('click', showMainMenu);
-    document.getElementById('resetScoreBtn').addEventListener('click', resetHighScore);
     document.getElementById('resumeBtn').addEventListener('click', togglePause);
     document.getElementById('pauseMenuBtn').addEventListener('click', showMainMenu);
 
@@ -637,13 +640,6 @@ function loadHighScore() {
     highScoreNodes.forEach(node => node.textContent = formattedMsg);
 }
 
-function resetHighScore() {
-    if (currentMode !== 'custom') {
-        localStorage.removeItem(getStoreKey());
-        loadHighScore();
-    }
-}
-
 function renderProgressList() {
     const listContainer = document.getElementById('progressList');
     listContainer.innerHTML = '';
@@ -828,20 +824,30 @@ function updateBot(dt) {
     forceX += cwX * pullBase;
     forceY += cwY * pullBase;
 
-    // Wall / Boundary Repulsion (Keeps bot away from corners and edges)
-    const margin = 100;
-    const wallPushPower = 1500;
-    if (player.x < margin) forceX += (margin - player.x) * wallPushPower / margin;
-    if (player.x > canvas.width - margin) forceX -= (player.x - (canvas.width - margin)) * wallPushPower / margin;
-    if (player.y < margin) forceY += (margin - player.y) * wallPushPower / margin;
-    if (player.y > canvas.height - margin) forceY -= (player.y - (canvas.height - margin)) * wallPushPower / margin;
+    // Absolute Wall / Boundary Repulsion (Exponential 1/dist^3 keeps bot actively out of corners)
+    const margin = 120;
+    const wallPushPower = 2000;
+    let leftDist = player.x;
+    let rightDist = canvas.width - player.x;
+    let topDist = player.y;
+    let bottomDist = canvas.height - player.y;
+
+    if (leftDist < margin) forceX += Math.pow(margin / (leftDist || 1), 3) * wallPushPower;
+    if (rightDist < margin) forceX -= Math.pow(margin / (rightDist || 1), 3) * wallPushPower;
+    if (topDist < margin) forceY += Math.pow(margin / (topDist || 1), 3) * wallPushPower;
+    if (bottomDist < margin) forceY -= Math.pow(margin / (bottomDist || 1), 3) * wallPushPower;
 
     // Repulsive forces from entities
     let nearbyThreats = 0;
     entities.forEach(entity => {
         if (entity instanceof Obstacle) {
-            const dx = player.x - entity.x;
-            const dy = player.y - entity.y;
+            // Predictive Evasion: Calculate future position of obstacle based on velocity
+            const lookAheadTime = 0.5 * levelSpec.reactFast; // higher levels look further ahead
+            const predX = entity.x + entity.vx * lookAheadTime;
+            const predY = entity.y + entity.vy * lookAheadTime;
+
+            const dx = player.x - predX;
+            const dy = player.y - predY;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist < levelSpec.scanRadius) {
@@ -899,14 +905,20 @@ function updateBot(dt) {
     const botSpeed = maxSpeedBase * levelSpec.speedBoost;
 
     const forceMag = Math.sqrt(forceX * forceX + forceY * forceY);
+    let targetVx = 0;
+    let targetVy = 0;
     if (forceMag > 0) {
-        forceX = (forceX / forceMag) * botSpeed;
-        forceY = (forceY / forceMag) * botSpeed;
+        targetVx = (forceX / forceMag) * botSpeed;
+        targetVy = (forceY / forceMag) * botSpeed;
     }
 
-    // Apply smoothing/reaction time limitations (Lerp current pos to target pos)
-    mouse.x += (player.x + forceX * dt - mouse.x) * levelSpec.reactFast;
-    mouse.y += (player.y + forceY * dt - mouse.y) * levelSpec.reactFast;
+    // Apply Flow Physics Momentum
+    const friction = 0.85; // Natural glide friction
+    botVx = botVx * friction + targetVx * (1 - friction) * levelSpec.reactFast;
+    botVy = botVy * friction + targetVy * (1 - friction) * levelSpec.reactFast;
+
+    mouse.x = player.x + botVx * dt;
+    mouse.y = player.y + botVy * dt;
 
     player.update();
 }
