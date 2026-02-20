@@ -550,6 +550,7 @@ body {
 
 input[type="range"] {
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 6px;
   background: rgba(255, 255, 255, 0.05);
@@ -668,6 +669,12 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+button:active,
+.mode-card:active {
+  transform: scale(0.96) !important;
+  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .primary-btn {
@@ -800,6 +807,141 @@ button {
     transform: translateY(0);
   }
 }
+
+/* =========================================================
+   UX / UI HEURISTICS: RESPONSIVENESS & MOBILE LAYOUT OVERRIDES 
+   ========================================================= */
+@media (max-width: 768px) {
+  .menu-layout {
+    flex-direction: column;
+    height: 95vh;
+    max-height: 95vh;
+    border-radius: 20px;
+    width: 95%;
+  }
+
+  .menu-left {
+    flex: 0 0 auto;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+    max-height: 40vh;
+  }
+
+  .menu-header {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .mode-list {
+    flex-direction: row;
+    padding: 16px 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .mode-card {
+    flex: 0 0 calc(70% - 16px);
+    scroll-snap-align: center;
+    flex-direction: column-reverse;
+    /* icon on top */
+    justify-content: center;
+    text-align: center;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .mode-card .mode-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0;
+    transform: none;
+  }
+
+  .mode-card:hover,
+  .mode-card.active {
+    transform: scale(1.02);
+  }
+
+  .mode-card.active .mode-icon {
+    transform: none;
+  }
+
+  .mode-category {
+    display: none;
+    /* Hide categories on mobile to save horizontal space */
+  }
+
+  .menu-right {
+    padding: 24px;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .mode-title {
+    font-size: 1.8rem;
+  }
+
+  .mode-desc {
+    font-size: 1rem;
+  }
+
+  .action-top {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .high-score-container {
+    align-items: center;
+    text-align: center;
+  }
+
+  .primary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .action-bottom {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .ghost-btn,
+  .danger-btn {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .settings-row {
+    flex-direction: column;
+  }
+
+  .modal-content {
+    min-width: 0;
+    width: 95vw;
+    padding: 24px;
+  }
+
+  .progress-item {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .progress-item .progress-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 
 .pulse {
   animation: pulseLight 2s infinite;
