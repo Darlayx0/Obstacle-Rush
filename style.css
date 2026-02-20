@@ -82,29 +82,39 @@ body {
 .progress-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   max-height: 50vh;
   overflow-y: auto;
   padding-right: 8px;
 }
 
-.progress-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.progress-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+.leaderboard-header {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr min-content;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0 16px 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 12px;
 }
 
 .progress-item {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 2fr 1.5fr min-content;
   align-items: center;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.progress-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.02);
 }
 
 .progress-item .mode-name {
@@ -113,34 +123,38 @@ body {
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .progress-item .score-val {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--accent-cyan);
   font-variant-numeric: tabular-nums;
+  justify-self: start;
 }
 
 .progress-item .progress-actions {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  justify-content: flex-end;
 }
 
 .delete-single-btn {
-  background: transparent;
-  border: none;
+  background: rgba(255, 0, 60, 0.1);
+  border: 1px solid rgba(255, 0, 60, 0.3);
   color: var(--accent-red);
-  opacity: 0.6;
   cursor: pointer;
-  transition: opacity 0.2s;
-  padding: 4px;
+  transition: all 0.2s;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .delete-single-btn:hover {
-  opacity: 1;
+  background: var(--accent-red);
+  color: white;
+  box-shadow: 0 0 10px rgba(255, 0, 60, 0.5);
 }
 
 /* Category Headers */
@@ -431,13 +445,10 @@ body {
   border-radius: 3px;
 }
 
-.settings-row {
-  display: flex;
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
-}
-
-.settings-row.double-col .setting-group {
-  flex: 1;
 }
 
 .engine-block {
@@ -445,6 +456,14 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.engine-block.player-block {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), transparent);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .block-header {
@@ -581,7 +600,47 @@ input[type="range"]::-webkit-slider-thumb:hover {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
+}
+
+/* Bot Controller UI */
+.bot-controller {
+  background: rgba(6, 182, 212, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bot-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bot-label {
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.bot-level-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.bot-badge {
+  background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+  color: white !important;
+  border: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .high-score-container {

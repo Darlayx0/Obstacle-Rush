@@ -45,6 +45,11 @@ const togLaser = document.getElementById('togLaser');
 const obsConfig = document.getElementById('obsConfig');
 const laserConfig = document.getElementById('laserConfig');
 
+const togBot = document.getElementById('togBot');
+const botLevelContainer = document.getElementById('botLevelContainer');
+const rngBotLevel = document.getElementById('rngBotLevel');
+const valBotLevel = document.getElementById('valBotLevel');
+
 const livesText = document.getElementById('livesText');
 
 // Game State
@@ -60,8 +65,20 @@ let maxLives = 1;
 let isInvulnerable = false;
 let invulnerableTimer = 0;
 
+let isBotPlaying = false;
+let botLevel = 1;
+
 let currentMode = 'obstacle'; // Default mode
 let modConfig = {};
+
+const BOT_LEVELS = [
+    { label: '1 - Noob', reactFast: 0.1, scanRadius: 100, speedBoost: 0.8 },
+    { label: '2 - Beginner', reactFast: 0.2, scanRadius: 150, speedBoost: 1.0 },
+    { label: '3 - Intermediate', reactFast: 0.4, scanRadius: 200, speedBoost: 1.2 },
+    { label: '4 - Advanced', reactFast: 0.6, scanRadius: 300, speedBoost: 1.5 },
+    { label: '5 - Expert', reactFast: 0.8, scanRadius: 400, speedBoost: 1.8 },
+    { label: '6 - Master', reactFast: 1.0, scanRadius: 600, speedBoost: 2.5 }
+];
 
 // Mode Configurations
 const defaultGrowth = 0.99;
@@ -322,6 +339,21 @@ function init() {
     togLaser.addEventListener('change', (e) => {
         if (e.target.checked) laserConfig.classList.remove('hidden-content');
         else laserConfig.classList.add('hidden-content');
+    });
+    togBot.addEventListener('change', (e) => {
+        isBotPlaying = e.target.checked;
+        if (e.target.checked) {
+            botLevelContainer.classList.remove('hidden-content');
+            document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
+        } else {
+            botLevelContainer.classList.add('hidden-content');
+            document.getElementById('startBtn').innerHTML = 'MAIN SEKARANG <span class="arrow">→</span>';
+        }
+    });
+
+    rngBotLevel.addEventListener('input', (e) => {
+        botLevel = parseInt(e.target.value);
+        valBotLevel.textContent = BOT_LEVELS[botLevel - 1].label;
     });
 
     // Listen to custom ranges
@@ -589,6 +621,7 @@ function getStoreKey() {
 }
 
 function saveHighScore() {
+    if (isBotPlaying) return; // Never save score if bot is playing
     const key = getStoreKey();
     const currentHigh = parseFloat(localStorage.getItem(key)) || 0;
     if (timeSurvived > currentHigh) {
@@ -626,8 +659,8 @@ function renderProgressList() {
             <div class="mode-name">
                 <span class="mode-icon">${mode.icon}</span> ${mode.label}
             </div>
+            <span class="score-val">${formatTime(high)}</span>
             <div class="progress-actions">
-                <span class="score-val">${formatTime(high)}</span>
                 <button class="delete-single-btn" data-mode="${key}" title="Hapus Skor">✕</button>
             </div>
         `;
@@ -743,8 +776,21 @@ function gameLoop(currentTime) {
         }
     }
 
-    // Update and draw
-    player.update();
+    // Laser Spawner
+    if (lRate > 0) {
+        lasSpawnTimer += safeDt;
+        if (lasSpawnTimer >= lRate) {
+            entities.push(new Laser());
+            lasSpawnTimer = 0;
+        }
+    }
+
+    if (isBotPlaying) {
+        updateBot(safeDt);
+    } else {
+        player.update();
+    }
+
     player.draw(ctx);
 
     for (let i = entities.length - 1; i >= 0; i--) {
@@ -762,6 +808,87 @@ function gameLoop(currentTime) {
     }
 
     animationId = requestAnimationFrame(gameLoop);
+}
+
+function updateBot(dt) {
+    const levelSpec = BOT_LEVELS[botLevel - 1];
+    let forceX = 0;
+    let forceY = 0;
+
+    // Attractive force to center of screen (keeps bot alive and away from borders)
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const distCenterSq = Math.pow(centerX - player.x, 2) + Math.pow(centerY - player.y, 2);
+
+    // Slight pull towards center
+    const pullBase = 200;
+    const cwX = (centerX - player.x) / (Math.sqrt(distCenterSq) || 1);
+    const cwY = (centerY - player.y) / (Math.sqrt(distCenterSq) || 1);
+    forceX += cwX * pullBase;
+    forceY += cwY * pullBase;
+
+    // Repulsive forces from entities
+    entities.forEach(entity => {
+        if (entity instanceof Obstacle) {
+            const dx = player.x - entity.x;
+            const dy = player.y - entity.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < levelSpec.scanRadius) {
+                // The closer it is, the stronger the push
+                const pushPow = Math.pow(levelSpec.scanRadius / (dist || 1), 3);
+                forceX += (dx / dist) * pushPow * 1000;
+                forceY += (dy / dist) * pushPow * 1000;
+            }
+        } else if (entity instanceof Laser && entity.phase === 'warning') {
+            // Flee perpendicular to laser line
+            const dist = pointLineDistance(player.x, player.y, entity.x1, entity.y1, entity.x2, entity.y2);
+            if (dist < levelSpec.scanRadius * 1.5) { // Lasers are very dangerous, look further
+                const dx = entity.x2 - entity.x1;
+                const dy = entity.y2 - entity.y1;
+                const len = Math.sqrt(dx * dx + dy * dy);
+
+                // Perpendicular normal vectors
+                const nx1 = -dy / len;
+                const ny1 = dx / len;
+                const nx2 = dy / len;
+                const ny2 = -dx / len;
+
+                // Choose normal that points away from center of laser
+                const midX = (entity.x1 + entity.x2) / 2;
+                const midY = (entity.y1 + entity.y2) / 2;
+                const pDx = player.x - midX;
+                const pDy = player.y - midY;
+
+                let ex, ey;
+                if (nx1 * pDx + ny1 * pDy > 0) {
+                    ex = nx1; ey = ny1;
+                } else {
+                    ex = nx2; ey = ny2;
+                }
+
+                const pushPow = Math.pow(levelSpec.scanRadius * 1.5 / (dist || 1), 2);
+                forceX += ex * pushPow * 2000;
+                forceY += ey * pushPow * 2000;
+            }
+        }
+    });
+
+    // Normalize and scale by max speed
+    const maxSpeedBase = 800; // Pixels per second
+    const botSpeed = maxSpeedBase * levelSpec.speedBoost;
+
+    const forceMag = Math.sqrt(forceX * forceX + forceY * forceY);
+    if (forceMag > 0) {
+        forceX = (forceX / forceMag) * botSpeed;
+        forceY = (forceY / forceMag) * botSpeed;
+    }
+
+    // Apply smoothing/reaction time limitations (Lerp current pos to target pos)
+    mouse.x += (player.x + forceX * dt - mouse.x) * levelSpec.reactFast;
+    mouse.y += (player.y + forceY * dt - mouse.y) * levelSpec.reactFast;
+
+    player.update();
 }
 
 init();
