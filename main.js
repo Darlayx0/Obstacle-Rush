@@ -273,6 +273,7 @@ resizeCanvas();
 
 function init() {
     window.addEventListener('pointermove', (e) => {
+        if (isBotPlaying) return; // Prevent user cursor interference when bot is active
         mouse.x = e.clientX;
         mouse.y = e.clientY;
     });
@@ -827,7 +828,16 @@ function updateBot(dt) {
     forceX += cwX * pullBase;
     forceY += cwY * pullBase;
 
+    // Wall / Boundary Repulsion (Keeps bot away from corners and edges)
+    const margin = 100;
+    const wallPushPower = 1500;
+    if (player.x < margin) forceX += (margin - player.x) * wallPushPower / margin;
+    if (player.x > canvas.width - margin) forceX -= (player.x - (canvas.width - margin)) * wallPushPower / margin;
+    if (player.y < margin) forceY += (margin - player.y) * wallPushPower / margin;
+    if (player.y > canvas.height - margin) forceY -= (player.y - (canvas.height - margin)) * wallPushPower / margin;
+
     // Repulsive forces from entities
+    let nearbyThreats = 0;
     entities.forEach(entity => {
         if (entity instanceof Obstacle) {
             const dx = player.x - entity.x;
@@ -835,15 +845,17 @@ function updateBot(dt) {
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist < levelSpec.scanRadius) {
+                nearbyThreats++;
                 // The closer it is, the stronger the push
                 const pushPow = Math.pow(levelSpec.scanRadius / (dist || 1), 3);
-                forceX += (dx / dist) * pushPow * 1000;
-                forceY += (dy / dist) * pushPow * 1000;
+                forceX += (dx / dist) * pushPow * 800; // slightly toned down individual obstacle push
+                forceY += (dy / dist) * pushPow * 800;
             }
         } else if (entity instanceof Laser && entity.phase === 'warning') {
             // Flee perpendicular to laser line
             const dist = pointLineDistance(player.x, player.y, entity.x1, entity.y1, entity.x2, entity.y2);
             if (dist < levelSpec.scanRadius * 1.5) { // Lasers are very dangerous, look further
+                nearbyThreats++;
                 const dx = entity.x2 - entity.x1;
                 const dy = entity.y2 - entity.y1;
                 const len = Math.sqrt(dx * dx + dy * dy);
@@ -868,11 +880,19 @@ function updateBot(dt) {
                 }
 
                 const pushPow = Math.pow(levelSpec.scanRadius * 1.5 / (dist || 1), 2);
-                forceX += ex * pushPow * 2000;
-                forceY += ey * pushPow * 2000;
+                forceX += ex * pushPow * 1500;
+                forceY += ey * pushPow * 1500;
             }
         }
     });
+
+    // If there are many threats, the bot might get overwhelmed with vectors. 
+    // We add a tiny bit of "panic" randomness at lower levels, and clinical precision at higher levels.
+    if (nearbyThreats > 2) {
+        const panicScale = (6 - botLevel) * 100; // More panic at lower levels
+        forceX += (Math.random() - 0.5) * panicScale;
+        forceY += (Math.random() - 0.5) * panicScale;
+    }
 
     // Normalize and scale by max speed
     const maxSpeedBase = 800; // Pixels per second
