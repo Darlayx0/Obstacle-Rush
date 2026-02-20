@@ -31,6 +31,22 @@ const valSpeed = document.getElementById('valSpeed');
 const rngTrack = document.getElementById('rngTrack');
 const valTrack = document.getElementById('valTrack');
 
+const rngLives = document.getElementById('rngLives');
+const valLives = document.getElementById('valLives');
+const rngObsGrowth = document.getElementById('rngObsGrowth');
+const valObsGrowth = document.getElementById('valObsGrowth');
+const rngLaserGrowth = document.getElementById('rngLaserGrowth');
+const valLaserGrowth = document.getElementById('valLaserGrowth');
+const rngLaserWarn = document.getElementById('rngLaserWarn');
+const valLaserWarn = document.getElementById('valLaserWarn');
+
+const togObs = document.getElementById('togObs');
+const togLaser = document.getElementById('togLaser');
+const obsConfig = document.getElementById('obsConfig');
+const laserConfig = document.getElementById('laserConfig');
+
+const livesText = document.getElementById('livesText');
+
 // Game State
 let animationId;
 let lastTime = 0;
@@ -39,17 +55,23 @@ let isPlaying = false;
 let isPaused = false;
 let mouse = { x: canvas.width / 2 || 0, y: canvas.height / 2 || 0 };
 
+let playerLives = 1;
+let maxLives = 1;
+let isInvulnerable = false;
+let invulnerableTimer = 0;
+
 let currentMode = 'obstacle'; // Default mode
 let modConfig = {};
 
 // Mode Configurations
+const defaultGrowth = 0.99;
 const MODES = {
-    obstacle: { label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', obsSpawn: 0.5, lasSpawn: 0, speed: 150, track: 0, saveScore: true },
-    laser: { label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', obsSpawn: 0, lasSpawn: 1.0, speed: 150, track: 0, saveScore: true },
-    chaos: { label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles (rintangan) maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', obsSpawn: 0.5, lasSpawn: 1.5, speed: 150, track: 0, saveScore: true },
-    sluggish: { label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan lambat dan strategis. Obstacles bergerak sangat lambat, dan memiliki tingkat kemunculan yang jauh lebih rendah, namun perlahan akan menutupi layar.', obsSpawn: 3.0, lasSpawn: 0, speed: 30, track: 0, saveScore: true },
-    lightning: { label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa dengan tingkat kemunculan yang sangat intensif.', obsSpawn: 0.1, lasSpawn: 0, speed: 450, track: 0, saveScore: true },
-    stalker: { label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 0.5, saveScore: true },
+    obstacle: { label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    laser: { label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', lives: 1, obsSpawn: 0, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    chaos: { label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles (rintangan) maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: 0.95, lasGrowth: 0.95, lasWarn: 1.0, saveScore: true },
+    sluggish: { label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan strategis. Obstacles bergerak lambat namun kemunculan beruntun, perlahan akan menutupi layar.', lives: 1, obsSpawn: 0.3, lasSpawn: 0, speed: 30, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    lightning: { label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 1.0, lasSpawn: 0, speed: 450, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    stalker: { label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
     custom: { label: 'Custom', icon: '⚙️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
@@ -86,6 +108,13 @@ class Player {
     }
 
     draw(ctx) {
+        if (isInvulnerable) {
+            // Blink every 0.1s
+            if (Math.floor(invulnerableTimer * 10) % 2 === 0) {
+                return; // skip drawing to create blink effect
+            }
+        }
+
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = '#f8fafc';
@@ -181,7 +210,7 @@ class Laser {
 
     update(dt) {
         this.timer += dt;
-        if (this.phase === 'warning' && this.timer >= LASER_WARNING_TIME) {
+        if (this.phase === 'warning' && this.timer >= modConfig.lasWarn) {
             this.phase = 'active';
             this.timer = 0;
         } else if (this.phase === 'active' && this.timer >= LASER_LIFETIME) {
@@ -256,6 +285,16 @@ function init() {
         modeList.appendChild(card);
     }
 
+    // Engine Toggles
+    togObs.addEventListener('change', (e) => {
+        if (e.target.checked) obsConfig.classList.remove('hidden-content');
+        else obsConfig.classList.add('hidden-content');
+    });
+    togLaser.addEventListener('change', (e) => {
+        if (e.target.checked) laserConfig.classList.remove('hidden-content');
+        else laserConfig.classList.add('hidden-content');
+    });
+
     // Listen to custom ranges
     const syncVal = (el, valNode, suffix = '') => {
         el.addEventListener('input', (e) => {
@@ -265,7 +304,11 @@ function init() {
     syncVal(rngObsSpawn, valObsSpawn, 's');
     syncVal(rngLaserSpawn, valLaserSpawn, 's');
     syncVal(rngSpeed, valSpeed, '');
-    syncVal(rngTrack, valTrack, '%');
+    syncVal(rngTrack, valTrack, 'x');
+    syncVal(rngLives, valLives, '');
+    syncVal(rngObsGrowth, valObsGrowth, 'x');
+    syncVal(rngLaserGrowth, valLaserGrowth, 'x');
+    syncVal(rngLaserWarn, valLaserWarn, 's');
 
 
     setMode('obstacle');
@@ -317,13 +360,15 @@ function setMode(modeKey) {
 
 function buildModConfig() {
     if (currentMode === 'custom') {
-        const obsS = parseFloat(rngObsSpawn.value);
-        const lasS = parseFloat(rngLaserSpawn.value);
         modConfig = {
-            obsSpawn: obsS > 2.9 ? 0 : obsS, // if set to max, treat as off (for ease)
-            lasSpawn: lasS === 0 ? 0 : lasS,
+            obsSpawn: togObs.checked ? parseFloat(rngObsSpawn.value) : 0,
+            lasSpawn: togLaser.checked ? parseFloat(rngLaserSpawn.value) : 0,
             speed: parseFloat(rngSpeed.value),
-            track: parseFloat(rngTrack.value)
+            track: parseFloat(rngTrack.value),
+            lives: parseInt(rngLives.value),
+            obsGrowth: parseFloat(rngObsGrowth.value),
+            lasGrowth: parseFloat(rngLaserGrowth.value),
+            lasWarn: parseFloat(rngLaserWarn.value)
         };
     } else {
         modConfig = MODES[currentMode];
@@ -367,6 +412,29 @@ function togglePause() {
     }
 }
 
+function takeDamage() {
+    if (isInvulnerable) return;
+
+    playerLives--;
+    updateLivesDisplay();
+
+    if (playerLives <= 0) {
+        gameOver();
+    } else {
+        isInvulnerable = true;
+        invulnerableTimer = 0;
+    }
+}
+
+function updateLivesDisplay() {
+    let hearts = '';
+    for (let i = 0; i < playerLives; i++) {
+        hearts += '❤️';
+    }
+    if (playerLives === 0) hearts = '💀';
+    livesText.textContent = hearts;
+}
+
 function startGame() {
     buildModConfig();
 
@@ -376,6 +444,12 @@ function startGame() {
     entities = [];
     obsSpawnTimer = 0;
     lasSpawnTimer = 0;
+
+    playerLives = modConfig.lives || 1;
+    maxLives = playerLives;
+    isInvulnerable = false;
+    invulnerableTimer = 0;
+    updateLivesDisplay();
 
     mouse.x = canvas.width / 2;
     mouse.y = canvas.height / 2;
@@ -517,18 +591,29 @@ function gameLoop(currentTime) {
     const safeDt = Math.min(dt, 0.1);
     timeSurvived += safeDt;
 
+    if (isInvulnerable) {
+        invulnerableTimer += safeDt;
+        if (invulnerableTimer >= 1.0) {
+            isInvulnerable = false;
+        }
+    }
+
     drawBackground();
     updateScoreDisplay();
 
     // Determine current effective spawn rates
-    // Spawn rate intervals decrease (get faster) over time
+    // Spawn rate intervals decrease (get faster) over time multiplied by growth constant
+    // Examples: 0.99x shrinks the interval by 1% per second
     let oRate = 0;
     if (modConfig.obsSpawn > 0) {
-        oRate = Math.max(0.05, modConfig.obsSpawn - (timeSurvived * 0.005));
+        const growthPower = Math.pow(modConfig.obsGrowth, timeSurvived);
+        oRate = Math.max(0.05, modConfig.obsSpawn * growthPower);
     }
+
     let lRate = 0;
     if (modConfig.lasSpawn > 0) {
-        lRate = Math.max(0.1, modConfig.lasSpawn - (timeSurvived * 0.01));
+        const growthPower = Math.pow(modConfig.lasGrowth, timeSurvived);
+        lRate = Math.max(0.1, modConfig.lasSpawn * growthPower);
     }
 
     // Obstacle Spawner
@@ -559,8 +644,7 @@ function gameLoop(currentTime) {
         entity.draw(ctx);
 
         if (checkCollision(player, entity)) {
-            gameOver();
-            return;
+            takeDamage();
         }
 
         if (entity.isDead()) {

@@ -26,6 +26,10 @@
         <span class="label">Time</span>
         <span id="scoreText" class="value">0,00s</span>
       </div>
+      <div class="lives-display">
+        <span class="label">Nyawa</span>
+        <span id="livesText" class="value">❤️❤️❤️</span>
+      </div>
     </div>
 
     <!-- Main Menu -->
@@ -51,32 +55,82 @@
         </div>
 
         <div id="customPanel" class="custom-panel hidden">
-          <div class="setting-group">
-            <label>Obs. Spawn: <span id="valObsSpawn" class="val-badge">0.5s</span></label>
-            <input type="range" id="rngObsSpawn" min="0.1" max="3" step="0.1" value="0.5">
+          <!-- Main Engine Sliders -->
+          <div class="settings-row double-col">
+            <div class="setting-group">
+              <label>Sisa Nyawa: <span id="valLives" class="val-badge">1</span></label>
+              <input type="range" id="rngLives" min="1" max="10" step="1" value="1">
+            </div>
+            <div class="setting-group">
+              <label>Kec. Dasar: <span id="valSpeed" class="val-badge">150</span></label>
+              <input type="range" id="rngSpeed" min="50" max="800" step="10" value="150">
+            </div>
           </div>
-          <div class="setting-group">
-            <label>Laser Spawn: <span id="valLaserSpawn" class="val-badge">0</span></label>
-            <input type="range" id="rngLaserSpawn" min="0" max="3" step="0.1" value="0">
+
+          <div class="settings-row double-col">
+            <div class="setting-group">
+              <label>Pelacakan (Tracking): <span id="valTrack" class="val-badge">0x</span></label>
+              <input type="range" id="rngTrack" min="0" max="5" step="0.1" value="0">
+            </div>
           </div>
-          <div class="setting-group">
-            <label>Base Speed: <span id="valSpeed" class="val-badge">150</span></label>
-            <input type="range" id="rngSpeed" min="50" max="500" step="10" value="150">
+
+          <!-- Obstacles Block -->
+          <div class="engine-block">
+            <div class="block-header">
+              <span class="block-title">🔴 Rintangan (Obstacles)</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togObs" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div id="obsConfig" class="block-content">
+              <div class="setting-group">
+                <label>Tingkat Kemunculan: <span id="valObsSpawn" class="val-badge">0.50s</span></label>
+                <input type="range" id="rngObsSpawn" min="0.05" max="3.00" step="0.01" value="0.5">
+              </div>
+              <div class="setting-group">
+                <label>Prtmbhn. Kesulitan: <span id="valObsGrowth" class="val-badge">0.99x</span></label>
+                <input type="range" id="rngObsGrowth" min="0.90" max="1.00" step="0.01" value="0.99">
+              </div>
+            </div>
           </div>
-          <div class="setting-group">
-            <label>Tracking: <span id="valTrack" class="val-badge">0%</span></label>
-            <input type="range" id="rngTrack" min="0" max="5" step="0.1" value="0">
+
+          <!-- Lasers Block -->
+          <div class="engine-block">
+            <div class="block-header">
+              <span class="block-title">💥 Lasers</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togLaser">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div id="laserConfig" class="block-content hidden-content">
+              <div class="setting-group">
+                <label>Tingkat Kemunculan: <span id="valLaserSpawn" class="val-badge">1.00s</span></label>
+                <input type="range" id="rngLaserSpawn" min="0.10" max="5.00" step="0.01" value="1.0">
+              </div>
+              <div class="setting-group">
+                <label>Durasi Peringatan: <span id="valLaserWarn" class="val-badge">1.00s</span></label>
+                <input type="range" id="rngLaserWarn" min="0.20" max="3.00" step="0.01" value="1.0">
+              </div>
+              <div class="setting-group">
+                <label>Prtmbhn. Kesulitan: <span id="valLaserGrowth" class="val-badge">0.99x</span></label>
+                <input type="range" id="rngLaserGrowth" min="0.80" max="1.00" step="0.01" value="0.99">
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="action-footer">
-          <div class="high-score-container" id="highScoreContainer">
-            <span class="label">Waktu Terbaik</span>
-            <span id="highScoreText" class="value highScoreValue">0,00s</span>
-          </div>
-          <div class="btn-group">
+          <div class="action-top">
+            <div class="high-score-container" id="highScoreContainer">
+              <span class="label">Waktu Terbaik</span>
+              <span id="highScoreText" class="value highScoreValue">0,00s</span>
+            </div>
             <button id="startBtn" class="primary-btn pulse">MAIN SEKARANG <span class="arrow">→</span></button>
-            <button id="resetScoreBtn" class="secondary-btn icon-btn" title="Reset Skor">✕</button>
+          </div>
+          <div class="action-bottom">
+            <button id="resetScoreBtn" class="danger-btn text-sm">Hapus Skor Mode Ini</button>
           </div>
         </div>
       </div>
