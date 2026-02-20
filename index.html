@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Obstacle Rush</title>
+  <link rel="stylesheet" href="./style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- UI Overlay container -->
+  <div id="uiLayer" class="ui-layer">
+    <!-- HUD -->
+    <div id="hud" class="hud hidden">
+      <div class="score-display">
+        <span class="label">Time</span>
+        <span id="scoreText" class="value">0,00s</span>
+      </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="mainMenu" class="menu-layout glassmorphism active">
+      <div class="menu-left">
+        <div class="menu-header">
+          <h1 class="title">OBSTACLE<br><span class="accent">RUSH</span></h1>
+          <p class="subtitle">Select Your Challenge</p>
+        </div>
+        <div class="mode-list" id="modeList">
+          <!-- Dynamically populated by JS -->
+        </div>
+      </div>
+
+      <div class="menu-right">
+        <div class="mode-details">
+          <h2 id="infoTitle" class="mode-title">Obstacles</h2>
+          <p id="infoDesc" class="mode-desc">Dodge falling red circles as they gradually speed up over time.</p>
+        </div>
+
+        <div id="customPanel" class="custom-panel hidden">
+          <div class="setting-group">
+            <label>Obs. Spawn: <span id="valObsSpawn" class="val-badge">0.5s</span></label>
+            <input type="range" id="rngObsSpawn" min="0.1" max="3" step="0.1" value="0.5">
+          </div>
+          <div class="setting-group">
+            <label>Laser Spawn: <span id="valLaserSpawn" class="val-badge">0</span></label>
+            <input type="range" id="rngLaserSpawn" min="0" max="3" step="0.1" value="0">
+          </div>
+          <div class="setting-group">
+            <label>Base Speed: <span id="valSpeed" class="val-badge">150</span></label>
+            <input type="range" id="rngSpeed" min="50" max="500" step="10" value="150">
+          </div>
+          <div class="setting-group">
+            <label>Tracking: <span id="valTrack" class="val-badge">0%</span></label>
+            <input type="range" id="rngTrack" min="0" max="5" step="0.1" value="0">
+          </div>
+        </div>
+
+        <div class="action-footer">
+          <div class="high-score-container" id="highScoreContainer">
+            <span class="label">Best Time</span>
+            <span id="highScoreText" class="value highScoreValue">0,00s</span>
+          </div>
+          <div class="btn-group">
+            <button id="startBtn" class="primary-btn pulse">PLAY NOW <span class="arrow">→</span></button>
+            <button id="resetScoreBtn" class="secondary-btn icon-btn" title="Reset Progress">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause Menu -->
+    <div id="pauseMenu" class="menu-panel glassmorphism hidden">
+      <h1 class="title">GAME <span class="accent">PAUSED</span></h1>
+      <button id="resumeBtn" class="primary-btn">RESUME</button>
+      <button id="pauseMenuBtn" class="secondary-btn">Main Menu</button>
+    </div>
+
+    <!-- Game Over Menu -->
+    <div id="gameOverMenu" class="menu-panel glassmorphism hidden">
+      <h1 class="title loss-title">GAME <span class="accent-red">OVER</span></h1>
+      <div class="stats-container">
+        <div class="stat-box">
+          <span class="label">Survived</span>
+          <span id="finalScoreText" class="value">0,00s</span>
+        </div>
+        <div class="stat-box">
+          <span class="label">Best</span>
+          <span id="gameOverHighScoreText" class="value highScoreValue">0,00s</span>
+        </div>
+      </div>
+      <button id="restartBtn" class="primary-btn">TRY AGAIN</button>
+      <button id="menuBtn" class="secondary-btn">Main Menu</button>
+    </div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+
+</html>
