@@ -60,6 +60,16 @@
           </div>
         </div>
 
+        <!-- Target Hunt Toggle -->
+        <div
+          style="margin: 0 32px 16px 32px; padding: 10px 12px; background: rgba(250, 204, 21, 0.05); border: 1px solid rgba(250, 204, 21, 0.15); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.8rem; color: var(--text-muted);">🎯 Target Hunt (semua mode)</span>
+          <label class="toggle-switch" style="transform: scale(0.8); transform-origin: right center;">
+            <input type="checkbox" id="togTargetHunt" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+
         <div class="mode-list" id="modeList">
           <!-- Dynamically populated by JS -->
         </div>
@@ -300,7 +310,9 @@
           <!-- Dynamically populated by renderAchievementModal -->
         </div>
         <div
-          style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); text-align: right;">
+          style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+          <button id="resetAllAchievementsBtn" class="danger-btn" onclick="resetAllAchievements()">🔥 Hapus
+            Semua</button>
           <button id="closeAchievementBtn" class="secondary-btn">Tutup</button>
         </div>
       </div>

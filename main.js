@@ -79,7 +79,8 @@ const livesText = document.getElementById('livesText');
 let animationId;
 let lastTime = 0;
 let timeSurvived = 0; // in seconds
-let targetScore = 0; // for target hunt mode
+let targetScore = 0; // for target hunt
+let targetHuntEnabled = true; // target hunt toggle
 let isPlaying = false;
 let isPaused = false;
 
@@ -529,8 +530,10 @@ function init() {
         document.getElementById('mainMenu').style.display = 'flex';
     });
     document.getElementById('resetAllProgressBtn').addEventListener('click', () => {
+        if (!confirm('Apakah Anda yakin ingin menghapus SEMUA data skor? Tindakan ini tidak dapat dibatalkan.')) return;
         for (const key of Object.keys(MODES)) {
             localStorage.removeItem(`obstacleRushHigh_${key}`);
+            localStorage.removeItem(`obstacleRushHighTarget_${key}`);
         }
         renderProgressList();
         loadHighScore();
@@ -545,6 +548,15 @@ function init() {
         document.getElementById('achievementModal').classList.add('hidden');
         document.getElementById('mainMenu').style.display = 'flex';
     });
+
+    // Target Hunt toggle
+    const togTargetHunt = document.getElementById('togTargetHunt');
+    if (togTargetHunt) {
+        togTargetHunt.checked = true;
+        togTargetHunt.addEventListener('change', () => {
+            targetHuntEnabled = togTargetHunt.checked;
+        });
+    }
 
     // Populate Preset Select Dropdown
     const presetSelect = document.getElementById('presetSelect');
@@ -962,27 +974,29 @@ function getStoreKey() {
 function saveHighScore() {
     if (isBotPlaying) return;
     const key = getStoreKey();
-    const currentHigh = parseFloat(localStorage.getItem(key)) || 0;
-    if (isTargetMode()) {
-        if (targetScore > currentHigh) {
-            localStorage.setItem(key, targetScore.toString());
-        }
-    } else {
-        if (timeSurvived > currentHigh) {
-            localStorage.setItem(key, timeSurvived.toString());
+    // Save time-based high score
+    const currentTimeHigh = parseFloat(localStorage.getItem(key)) || 0;
+    if (timeSurvived > currentTimeHigh) {
+        localStorage.setItem(key, timeSurvived.toString());
+    }
+    // Save target-based high score (separate key)
+    if (targetHuntEnabled) {
+        const targetKey = `obstacleRushHighTarget_${currentMode}`;
+        const currentTargetHigh = parseFloat(localStorage.getItem(targetKey)) || 0;
+        if (targetScore > currentTargetHigh) {
+            localStorage.setItem(targetKey, targetScore.toString());
         }
     }
 }
 
 function loadHighScore() {
     const key = getStoreKey();
-    const high = parseFloat(localStorage.getItem(key)) || 0;
-    const mode = MODES[currentMode];
-    let formattedMsg;
-    if (mode && mode.scoreType === 'target') {
-        formattedMsg = `🎯 ${Math.floor(high)}`;
-    } else {
-        formattedMsg = formatTime(high);
+    const timeHigh = parseFloat(localStorage.getItem(key)) || 0;
+    const targetKey = `obstacleRushHighTarget_${currentMode}`;
+    const targetHigh = parseFloat(localStorage.getItem(targetKey)) || 0;
+    let formattedMsg = formatTime(timeHigh);
+    if (targetHigh > 0) {
+        formattedMsg += ` | 🎯 ${Math.floor(targetHigh)}`;
     }
     highScoreNodes.forEach(node => node.textContent = formattedMsg);
 }
@@ -995,11 +1009,12 @@ function renderProgressList() {
         if (!mode.saveScore) continue;
         const storeKey = `obstacleRushHigh_${key}`;
         const high = parseFloat(localStorage.getItem(storeKey)) || 0;
+        const targetHigh = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${key}`)) || 0;
 
         const item = document.createElement('div');
         item.className = 'progress-item';
 
-        const scoreDisplay = mode.scoreType === 'target' ? `🎯 ${Math.floor(high)}` : formatTime(high);
+        const scoreDisplay = formatTime(high) + (targetHigh > 0 ? ` | 🎯 ${Math.floor(targetHigh)}` : '');
 
         item.innerHTML = `
             <div class="mode-name">
@@ -1015,8 +1030,10 @@ function renderProgressList() {
 
     listContainer.querySelectorAll('.delete-single-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            if (!confirm('Hapus skor untuk mode ini?')) return;
             const m = e.target.dataset.mode;
             localStorage.removeItem(`obstacleRushHigh_${m}`);
+            localStorage.removeItem(`obstacleRushHighTarget_${m}`);
             renderProgressList(); // Refresh modal
             if (currentMode === m) loadHighScore(); // Sync active view UI
         });
@@ -1027,8 +1044,8 @@ function renderProgressList() {
 const TIME_MILESTONES = [30, 60, 90, 120, 150];
 const TARGET_MILESTONES = [10, 20, 30, 40, 50];
 
-function getAchievementKey(modeKey, milestone) {
-    return `obstacleRushAch_${modeKey}_${milestone}`;
+function getAchievementKey(modeKey, type, milestone) {
+    return `obstacleRushAch_${modeKey}_${type}_${milestone}`;
 }
 
 function checkAchievements() {
@@ -1036,28 +1053,31 @@ function checkAchievements() {
     const mode = MODES[currentMode];
     if (!mode || !mode.saveScore) return;
 
-    if (mode.scoreType === 'target') {
+    // Time milestones (always)
+    TIME_MILESTONES.forEach(m => {
+        if (timeSurvived >= m) {
+            localStorage.setItem(getAchievementKey(currentMode, 'time', m), '1');
+        }
+    });
+
+    // Target milestones (if target hunt was active)
+    if (targetHuntEnabled) {
         TARGET_MILESTONES.forEach(m => {
             if (targetScore >= m) {
-                localStorage.setItem(getAchievementKey(currentMode, m), '1');
-            }
-        });
-    } else {
-        TIME_MILESTONES.forEach(m => {
-            if (timeSurvived >= m) {
-                localStorage.setItem(getAchievementKey(currentMode, m), '1');
+                localStorage.setItem(getAchievementKey(currentMode, 'target', m), '1');
             }
         });
     }
 }
 
 function getAchievementStats(modeKey) {
-    const mode = MODES[modeKey];
-    const milestones = (mode && mode.scoreType === 'target') ? TARGET_MILESTONES : TIME_MILESTONES;
     let completed = 0;
-    const total = milestones.length;
-    milestones.forEach(m => {
-        if (localStorage.getItem(getAchievementKey(modeKey, m))) completed++;
+    const total = TIME_MILESTONES.length + TARGET_MILESTONES.length;
+    TIME_MILESTONES.forEach(m => {
+        if (localStorage.getItem(getAchievementKey(modeKey, 'time', m))) completed++;
+    });
+    TARGET_MILESTONES.forEach(m => {
+        if (localStorage.getItem(getAchievementKey(modeKey, 'target', m))) completed++;
     });
     return { completed, total, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
 }
@@ -1072,6 +1092,16 @@ function getOverallAchievementStats() {
         total += stats.total;
     }
     return { completed, total, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
+}
+
+function resetAllAchievements() {
+    if (!confirm('Apakah Anda yakin ingin menghapus SEMUA pencapaian? Tindakan ini tidak dapat dibatalkan.')) return;
+    for (const [key, mode] of Object.entries(MODES)) {
+        if (!mode.saveScore) continue;
+        TIME_MILESTONES.forEach(m => localStorage.removeItem(getAchievementKey(key, 'time', m)));
+        TARGET_MILESTONES.forEach(m => localStorage.removeItem(getAchievementKey(key, 'target', m)));
+    }
+    renderAchievementModal();
 }
 
 function renderAchievementModal() {
@@ -1097,8 +1127,6 @@ function renderAchievementModal() {
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
         const stats = getAchievementStats(key);
-        const milestones = (mode.scoreType === 'target') ? TARGET_MILESTONES : TIME_MILESTONES;
-        const isTarget = mode.scoreType === 'target';
 
         const section = document.createElement('div');
         section.className = 'ach-mode-section';
@@ -1109,10 +1137,13 @@ function renderAchievementModal() {
             </div>
             <div class="ach-bar-bg"><div class="ach-bar-fill" style="width: ${stats.percent}%"></div></div>
             <div class="ach-milestones">
-                ${milestones.map(m => {
-            const done = !!localStorage.getItem(getAchievementKey(key, m));
-            const label = isTarget ? `🎯 ${m} target` : `⏱️ ${m}s`;
-            return `<span class="ach-milestone ${done ? 'done' : ''}">${done ? '✅' : '⬜'} ${label}</span>`;
+                ${TIME_MILESTONES.map(m => {
+            const done = !!localStorage.getItem(getAchievementKey(key, 'time', m));
+            return `<span class="ach-milestone ${done ? 'done' : ''}">${done ? '✅' : '⬜'} ⏱️ ${m}s</span>`;
+        }).join('')}
+                ${TARGET_MILESTONES.map(m => {
+            const done = !!localStorage.getItem(getAchievementKey(key, 'target', m));
+            return `<span class="ach-milestone ${done ? 'done' : ''}">${done ? '✅' : '⬜'} 🎯 ${m}</span>`;
         }).join('')}
             </div>
         `;
@@ -1241,13 +1272,12 @@ function gameLoop(currentTime) {
         }
     }
 
-    // Target Spawner (Target Hunt mode)
-    if (modConfig.scoreType === 'target' && modConfig.targetSpawn > 0) {
-        if (timeSurvived >= (modConfig.targetDelay || 10)) {
+    // Target Spawner (active in all modes when target hunt is enabled)
+    if (targetHuntEnabled && currentMode !== 'custom') {
+        if (timeSurvived >= 10) {
             targetSpawnTimer += safeDt;
-            // Only spawn if no active target exists
             const hasActiveTarget = entities.some(e => e instanceof Target && !e.collected);
-            if (!hasActiveTarget && targetSpawnTimer >= modConfig.targetSpawn) {
+            if (!hasActiveTarget && targetSpawnTimer >= 2.0) {
                 entities.push(new Target());
                 targetSpawnTimer = 0;
             }
