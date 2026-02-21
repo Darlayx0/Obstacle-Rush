@@ -52,10 +52,17 @@ const valProSpawn = document.getElementById('valProSpawn');
 
 const togChainsaw = document.getElementById('togChainsaw');
 const togBlackout = document.getElementById('togBlackout');
+const blackoutConfig = document.getElementById('blackoutConfig');
 const rngBlackoutRadius = document.getElementById('rngBlackoutRadius');
 const valBlackoutRadius = document.getElementById('valBlackoutRadius');
 const rngChainsawAmp = document.getElementById('rngChainsawAmp');
 const valChainsawAmp = document.getElementById('valChainsawAmp');
+
+const chkBullet = document.getElementById('chkBullet');
+const chkHoming = document.getElementById('chkHoming');
+const chkShotgun = document.getElementById('chkShotgun');
+const chkWave = document.getElementById('chkWave');
+const chkSniper = document.getElementById('chkSniper');
 
 const togBot = document.getElementById('togBot');
 const botLevelContainer = document.getElementById('botLevelContainer');
@@ -97,7 +104,7 @@ const BOT_LEVELS = [
 ];
 
 // Mode Configurations
-const defaultGrowth = 0.99;
+const defaultGrowth = 0.97;
 const MODES = {
     obstacle: { category: 'Klasik', label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     laser: { category: 'Klasik', label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', lives: 1, obsSpawn: 0, lasSpawn: 1.0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
@@ -170,7 +177,19 @@ class Player {
 class Projectile {
     constructor(type = null, startX = null, startY = null, targetAngle = null) {
         this.radius = 6;
-        const types = ['bullet', 'homing', 'shotgun', 'wave', 'sniper'];
+        let types = ['bullet', 'homing', 'shotgun', 'wave', 'sniper'];
+
+        // In custom mode, filter to only checked types
+        if (currentMode === 'custom' && type === null) {
+            const activeTypes = [];
+            if (chkBullet && chkBullet.checked) activeTypes.push('bullet');
+            if (chkHoming && chkHoming.checked) activeTypes.push('homing');
+            if (chkShotgun && chkShotgun.checked) activeTypes.push('shotgun');
+            if (chkWave && chkWave.checked) activeTypes.push('wave');
+            if (chkSniper && chkSniper.checked) activeTypes.push('sniper');
+            if (activeTypes.length > 0) types = activeTypes;
+        }
+
         this.type = type || types[Math.floor(Math.random() * types.length)];
 
         // Spawn edge logic
@@ -185,7 +204,7 @@ class Projectile {
             this.y = startY;
         }
 
-        const speedMult = 1 + (timeSurvived / 60);
+        const speedMult = 1 + (timeSurvived / 120);
         let baseSpeed = modConfig.speed * speedMult * 1.2;
 
         if (this.type === 'shotgun') {
@@ -212,7 +231,7 @@ class Projectile {
         this.angle = angle;
 
         if (this.type === 'homing') {
-            this.trackTimer = 1.5;
+            this.trackTimer = 2.5;
         }
     }
 
@@ -296,7 +315,7 @@ class Obstacle {
         const targetY = canvas.height / 2 + (Math.random() - 0.5) * canvas.height * 0.5;
         const angle = Math.atan2(targetY - this.y, targetX - this.x);
 
-        const speedMult = 1 + (timeSurvived / 30);
+        const speedMult = 1 + (timeSurvived / 120);
         const speed = modConfig.speed * speedMult * (0.8 + Math.random() * 0.4);
 
         this.vx = Math.cos(angle) * speed;
@@ -500,6 +519,10 @@ function init() {
         if (e.target.checked) proConfig.classList.remove('hidden-content');
         else proConfig.classList.add('hidden-content');
     });
+    togBlackout.addEventListener('change', (e) => {
+        if (e.target.checked) blackoutConfig.classList.remove('hidden-content');
+        else blackoutConfig.classList.add('hidden-content');
+    });
     togBot.addEventListener('change', (e) => {
         isBotPlaying = e.target.checked;
         const botContainer = document.querySelector('.bot-controller');
@@ -650,6 +673,12 @@ function applyPreset(presetMode) {
 
     togChainsaw.checked = !!mode.chainsaw;
     togBlackout.checked = !!mode.blackout;
+
+    if (mode.blackout) {
+        blackoutConfig.classList.remove('hidden-content');
+    } else {
+        blackoutConfig.classList.add('hidden-content');
+    }
 
     if (rngBlackoutRadius) {
         rngBlackoutRadius.value = mode.blackoutRadius || 200;
@@ -950,7 +979,8 @@ function gameLoop(currentTime) {
 
     let pRate = 0;
     if (modConfig.proSpawn > 0) {
-        pRate = modConfig.proSpawn;
+        const growthPower = Math.pow(modConfig.obsGrowth || 0.97, timeSurvived);
+        pRate = Math.max(0.1, modConfig.proSpawn * growthPower);
     }
 
     // Obstacle Spawner
