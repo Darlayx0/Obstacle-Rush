@@ -455,10 +455,16 @@ body {
 .engine-block {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.engine-block:hover {
+  border-color: rgba(6, 182, 212, 0.2);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.05);
 }
 
 .engine-block.player-block {
@@ -475,9 +481,10 @@ body {
 }
 
 .block-title {
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
 }
 
 .block-content {

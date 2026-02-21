@@ -52,6 +52,10 @@ const valProSpawn = document.getElementById('valProSpawn');
 
 const togChainsaw = document.getElementById('togChainsaw');
 const togBlackout = document.getElementById('togBlackout');
+const rngBlackoutRadius = document.getElementById('rngBlackoutRadius');
+const valBlackoutRadius = document.getElementById('valBlackoutRadius');
+const rngChainsawAmp = document.getElementById('rngChainsawAmp');
+const valChainsawAmp = document.getElementById('valChainsawAmp');
 
 const togBot = document.getElementById('togBot');
 const botLevelContainer = document.getElementById('botLevelContainer');
@@ -95,16 +99,16 @@ const BOT_LEVELS = [
 // Mode Configurations
 const defaultGrowth = 0.99;
 const MODES = {
-    obstacle: { category: 'Klasik', label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    laser: { category: 'Klasik', label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', lives: 1, obsSpawn: 0, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    chaos: { category: 'Klasik', label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles (rintangan) maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 1.0, speed: 150, track: 0, obsGrowth: 0.95, lasGrowth: 0.95, lasWarn: 1.0, saveScore: true },
-    sluggish: { category: 'Spesial', label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan strategis. Obstacles bergerak lambat namun kemunculan beruntun, perlahan akan menutupi layar.', lives: 1, obsSpawn: 0.3, lasSpawn: 0, speed: 30, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    lightning: { category: 'Spesial', label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 1.0, lasSpawn: 0, speed: 1000, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    stalker: { category: 'Spesial', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, saveScore: true },
-    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal (zigzag) yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 110, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, saveScore: true },
-    proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: 'Peluru tembak dari layar dengan 3 gaya: Tembakan lurus super cepat, Peluru pelacak otomatis yang mengunci target, dan Shotgun burst menyebar secara sporadis.', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.7, speed: 200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, saveScore: true },
-    custom: { category: 'Eksperimental', label: 'Custom', icon: '⚙️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
+    obstacle: { category: 'Klasik', label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    laser: { category: 'Klasik', label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', lives: 1, obsSpawn: 0, lasSpawn: 1.0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    chaos: { category: 'Klasik', label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 1.0, proSpawn: 0, speed: 150, track: 0, obsGrowth: 0.95, lasGrowth: 0.95, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    sluggish: { category: 'Tantangan', label: 'Sluggish', icon: '🐌', desc: 'Rintangan bergerak sangat lambat namun kemunculan sangat beruntun, perlahan akan menutupi seluruh layar.', lives: 1, obsSpawn: 0.25, lasSpawn: 0, proSpawn: 0, speed: 25, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    lightning: { category: 'Tantangan', label: 'Lightning', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 0.7, lasSpawn: 0, proSpawn: 0, speed: 1200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    stalker: { category: 'Tantangan', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, proSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, blackoutRadius: 160, chainsawAmp: 400, saveScore: true },
+    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 110, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    custom: { category: 'Kustom', label: 'Custom', icon: '🛠️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
 // Entities arrays
@@ -166,10 +170,10 @@ class Player {
 class Projectile {
     constructor(type = null, startX = null, startY = null, targetAngle = null) {
         this.radius = 6;
-        const types = ['bullet', 'homing', 'shotgun'];
+        const types = ['bullet', 'homing', 'shotgun', 'wave', 'sniper'];
         this.type = type || types[Math.floor(Math.random() * types.length)];
 
-        // Spawn edge logic (same as obstacle) if not provided
+        // Spawn edge logic
         if (startX === null || startY === null) {
             const edge = Math.floor(Math.random() * 4);
             if (edge === 0) { this.x = Math.random() * canvas.width; this.y = -this.radius; }
@@ -182,14 +186,13 @@ class Projectile {
         }
 
         const speedMult = 1 + (timeSurvived / 60);
-        let baseSpeed = modConfig.speed * speedMult * 1.2; // Projectiles slightly faster
+        let baseSpeed = modConfig.speed * speedMult * 1.2;
 
         if (this.type === 'shotgun') {
-            // If it's a raw shotgun spawn, immediately replace itself with 5 pellets and die
             if (targetAngle === null) {
                 const angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
                 for (let i = -2; i <= 2; i++) {
-                    const spread = angleToPlayer + (i * 0.2); // 0.2 rad spread
+                    const spread = angleToPlayer + (i * 0.2);
                     entities.push(new Projectile('bullet', this.x, this.y, spread));
                 }
                 this.dead = true;
@@ -199,16 +202,17 @@ class Projectile {
 
         const angle = targetAngle !== null ? targetAngle : Math.atan2(player.y - this.y, player.x - this.x);
 
-        if (this.type === 'homing') {
-            baseSpeed *= 0.6; // Homing is slower
-        }
+        if (this.type === 'homing') baseSpeed *= 0.6;
+        if (this.type === 'sniper') { baseSpeed *= 2.0; this.radius = 4; }
+        if (this.type === 'wave') { this.waveTimer = 0; }
 
         this.vx = Math.cos(angle) * baseSpeed;
         this.vy = Math.sin(angle) * baseSpeed;
         this.speed = baseSpeed;
+        this.angle = angle;
 
         if (this.type === 'homing') {
-            this.trackTimer = 1.5; // Only track for 1.5 seconds
+            this.trackTimer = 1.5;
         }
     }
 
@@ -221,13 +225,10 @@ class Projectile {
                 const angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
                 const currentAngle = Math.atan2(this.vy, this.vx);
                 let angleDiff = angleToPlayer - currentAngle;
-
                 while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
                 while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-
-                const turnSpeed = 0.5; // Halved for easier juking
+                const turnSpeed = 0.5;
                 const newAngle = currentAngle + Math.max(-turnSpeed * dt, Math.min(turnSpeed * dt, angleDiff));
-
                 this.vx = Math.cos(newAngle) * this.speed;
                 this.vy = Math.sin(newAngle) * this.speed;
             }
@@ -235,13 +236,30 @@ class Projectile {
 
         this.x += this.vx * dt;
         this.y += this.vy * dt;
+
+        // Wave type: sinusoidal perpendicular movement
+        if (this.type === 'wave') {
+            this.waveTimer += dt;
+            const perpX = -Math.sin(this.angle);
+            const perpY = Math.cos(this.angle);
+            const waveOffset = Math.sin(this.waveTimer * 6) * 120 * dt;
+            this.x += perpX * waveOffset;
+            this.y += perpY * waveOffset;
+        }
     }
 
     draw(ctx) {
         if (this.dead) return;
+        const COLORS = {
+            bullet: '#f87171',  // Red
+            homing: '#fbbf24',  // Amber
+            shotgun: '#f87171', // Red (pellets)
+            wave: '#a78bfa',    // Purple
+            sniper: '#34d399'   // Green
+        };
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.type === 'homing' ? '#fbbf24' : '#f87171'; // Amber for homing, red for bullets
+        ctx.fillStyle = COLORS[this.type] || '#f87171';
         ctx.shadowBlur = 10;
         ctx.shadowColor = ctx.fillStyle;
         ctx.fill();
@@ -302,7 +320,7 @@ class Obstacle {
             const len = Math.sqrt(this.vx * this.vx + this.vy * this.vy) || 1;
             const perpX = -this.vy / len;
             const perpY = this.vx / len;
-            const waveAmplitude = 400;
+            const waveAmplitude = modConfig.chainsawAmp || 400;
             const waveSpeed = 2;
             const wave = Math.sin(timeSurvived * waveSpeed) * waveAmplitude * dt;
             this.x += perpX * wave;
@@ -520,6 +538,8 @@ function init() {
     syncVal(rngObsGrowth, valObsGrowth, 'x');
     syncVal(rngLaserGrowth, valLaserGrowth, 'x');
     syncVal(rngLaserWarn, valLaserWarn, 's');
+    if (rngBlackoutRadius) syncVal(rngBlackoutRadius, valBlackoutRadius, 'px');
+    if (rngChainsawAmp) syncVal(rngChainsawAmp, valChainsawAmp, 'px');
 
 
     setMode('obstacle');
@@ -548,14 +568,24 @@ function setMode(modeKey) {
     modeStats.innerHTML = '';
     if (!isCustom) {
         if (mode.obsSpawn > 0) {
-            modeStats.innerHTML += `<div class="stat-pill">⏱️ Tingkat Kemunculan Rintangan: ${mode.obsSpawn.toFixed(1)}s</div>`;
-            modeStats.innerHTML += `<div class="stat-pill">💨 Kecepatan Dasar: ${mode.speed}</div>`;
+            modeStats.innerHTML += `<div class="stat-pill">⏱️ Kemunculan: ${mode.obsSpawn.toFixed(2)}s</div>`;
+            modeStats.innerHTML += `<div class="stat-pill">💨 Kecepatan: ${mode.speed}</div>`;
         }
         if (mode.lasSpawn > 0) {
-            modeStats.innerHTML += `<div class="stat-pill">💥 Tingkat Kemunculan Laser: ${mode.lasSpawn.toFixed(1)}s</div>`;
+            modeStats.innerHTML += `<div class="stat-pill">💥 Laser: ${mode.lasSpawn.toFixed(1)}s</div>`;
+        }
+        if (mode.proSpawn > 0) {
+            modeStats.innerHTML += `<div class="stat-pill">📡 Proyektil: ${mode.proSpawn.toFixed(2)}s</div>`;
+            modeStats.innerHTML += `<div class="stat-pill">🚀 Kecepatan: ${mode.speed}</div>`;
         }
         if (mode.track > 0) {
-            modeStats.innerHTML += `<div class="stat-pill">🎯 Pelacakan Magnetik: ${mode.track}x</div>`;
+            modeStats.innerHTML += `<div class="stat-pill">🎯 Pelacakan: ${mode.track}x</div>`;
+        }
+        if (mode.chainsaw) {
+            modeStats.innerHTML += `<div class="stat-pill">⚙️ Ayunan: ${mode.chainsawAmp}px</div>`;
+        }
+        if (mode.blackout) {
+            modeStats.innerHTML += `<div class="stat-pill">🔦 Area Senter: ${mode.blackoutRadius}px</div>`;
         }
     }
 
@@ -620,6 +650,15 @@ function applyPreset(presetMode) {
 
     togChainsaw.checked = !!mode.chainsaw;
     togBlackout.checked = !!mode.blackout;
+
+    if (rngBlackoutRadius) {
+        rngBlackoutRadius.value = mode.blackoutRadius || 200;
+        valBlackoutRadius.textContent = rngBlackoutRadius.value + 'px';
+    }
+    if (rngChainsawAmp) {
+        rngChainsawAmp.value = mode.chainsawAmp || 400;
+        valChainsawAmp.textContent = rngChainsawAmp.value + 'px';
+    }
 }
 
 function buildModConfig() {
@@ -635,7 +674,9 @@ function buildModConfig() {
             lasGrowth: parseFloat(rngLaserGrowth.value),
             lasWarn: parseFloat(rngLaserWarn.value),
             chainsaw: togChainsaw.checked,
-            blackout: togBlackout.checked
+            blackout: togBlackout.checked,
+            blackoutRadius: rngBlackoutRadius ? parseInt(rngBlackoutRadius.value) : 200,
+            chainsawAmp: rngChainsawAmp ? parseInt(rngChainsawAmp.value) : 400
         };
     } else {
         modConfig = MODES[currentMode];
@@ -964,7 +1005,7 @@ function gameLoop(currentTime) {
     if (currentMode === 'blackout' || (currentMode === 'custom' && modConfig.blackout)) {
         const cx = player.x;
         const cy = player.y;
-        const radius = 250;
+        const radius = modConfig.blackoutRadius || 160;
         const maxDim = Math.max(canvas.width, canvas.height) * 1.5;
 
         const gradient = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, maxDim);
