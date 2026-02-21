@@ -112,9 +112,12 @@ const MODES = {
     sluggish: { category: 'Tantangan', label: 'Sluggish', icon: '🐌', desc: 'Rintangan bergerak sangat lambat namun kemunculan sangat beruntun, perlahan akan menutupi seluruh layar.', lives: 1, obsSpawn: 0.25, lasSpawn: 0, proSpawn: 0, speed: 25, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     lightning: { category: 'Tantangan', label: 'Lightning', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 0.7, lasSpawn: 0, proSpawn: 0, speed: 1200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     stalker: { category: 'Tantangan', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, proSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    mirror: { category: 'Tantangan', label: 'Mirror', icon: '🪞', desc: 'Setiap rintangan yang muncul memiliki duplikat simetris dari sisi berlawanan layar. Jumlah rintangan 2x lipat!', lives: 1, obsSpawn: 0.6, lasSpawn: 0, proSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    mirrorPlayer: { category: 'Tantangan', label: 'Mirror Player', icon: '🎭', desc: '2 objek player bergerak di layar — satu mengikuti kursor, satu bergerak terbalik. Keduanya harus dijaga agar selamat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 120, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, blackoutRadius: 160, chainsawAmp: 400, saveScore: true },
     chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 110, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    disguise: { category: 'Eksperimental', label: 'Disguise', icon: '🔴', desc: 'Player terlihat identik dengan rintangan — merah, tanpa glow, ukuran sama. Bisakah Anda melacak diri sendiri di antara kerumunan?', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 100, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     custom: { category: 'Kustom', label: 'Custom', icon: '🛠️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
@@ -153,10 +156,21 @@ class Player {
 
     draw(ctx) {
         if (isInvulnerable) {
-            // Blink every 0.1s
             if (Math.floor(invulnerableTimer * 10) % 2 === 0) {
-                return; // skip drawing to create blink effect
+                return;
             }
+        }
+
+        // Disguise mode: draw as red circle (identical to obstacle)
+        if (currentMode === 'disguise') {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ef4444';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ef4444';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            return;
         }
 
         ctx.beginPath();
@@ -294,8 +308,9 @@ class Projectile {
 
 class Obstacle {
     constructor() {
-        this.radius = SIZES[Math.floor(Math.random() * SIZES.length)];
-        const edge = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+        // Disguise mode: fixed radius = PLAYER_RADIUS
+        this.radius = (currentMode === 'disguise') ? PLAYER_RADIUS : SIZES[Math.floor(Math.random() * SIZES.length)];
+        const edge = Math.floor(Math.random() * 4);
 
         if (edge === 0) {
             this.x = Math.random() * canvas.width;
@@ -423,6 +438,7 @@ class Laser {
 }
 
 let player = new Player();
+let mirrorPlayer = null; // Used in mirrorPlayer mode
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -781,6 +797,13 @@ function startGame() {
     lasSpawnTimer = 0;
     proSpawnTimer = 0;
 
+    // Initialize mirror player for mirrorPlayer mode
+    if (currentMode === 'mirrorPlayer') {
+        mirrorPlayer = { x: canvas.width / 2, y: canvas.height / 2, radius: PLAYER_RADIUS };
+    } else {
+        mirrorPlayer = null;
+    }
+
     playerLives = modConfig.lives || 1;
     maxLives = playerLives;
     isInvulnerable = false;
@@ -987,7 +1010,20 @@ function gameLoop(currentTime) {
     if (oRate > 0) {
         obsSpawnTimer += safeDt;
         if (obsSpawnTimer >= oRate) {
-            entities.push(new Obstacle());
+            const obs = new Obstacle();
+            entities.push(obs);
+
+            // Mirror mode: spawn symmetric duplicate
+            if (currentMode === 'mirror') {
+                const mirrorObs = new Obstacle();
+                mirrorObs.x = canvas.width - obs.x;
+                mirrorObs.y = canvas.height - obs.y;
+                mirrorObs.vx = -obs.vx;
+                mirrorObs.vy = -obs.vy;
+                mirrorObs.radius = obs.radius;
+                entities.push(mirrorObs);
+            }
+
             obsSpawnTimer = 0;
         }
     }
@@ -1016,7 +1052,28 @@ function gameLoop(currentTime) {
         player.update();
     }
 
+    // Mirror Player mode: update & draw mirror player
+    if (currentMode === 'mirrorPlayer' && mirrorPlayer) {
+        mirrorPlayer.x = canvas.width - player.x;
+        mirrorPlayer.y = canvas.height - player.y;
+    }
+
     player.draw(ctx);
+
+    // Draw mirror player (amber color)
+    if (currentMode === 'mirrorPlayer' && mirrorPlayer) {
+        ctx.beginPath();
+        ctx.arc(mirrorPlayer.x, mirrorPlayer.y, mirrorPlayer.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#fbbf24';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#fbbf24';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(mirrorPlayer.x, mirrorPlayer.y, mirrorPlayer.radius * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
 
     for (let i = entities.length - 1; i >= 0; i--) {
         const entity = entities[i];
@@ -1025,6 +1082,13 @@ function gameLoop(currentTime) {
 
         if (checkCollision(player, entity)) {
             takeDamage(entity);
+        }
+
+        // Mirror Player collision check
+        if (currentMode === 'mirrorPlayer' && mirrorPlayer && !entity.dead) {
+            if (checkCollision(mirrorPlayer, entity)) {
+                takeDamage(entity);
+            }
         }
 
         if (entity.isDead()) {
