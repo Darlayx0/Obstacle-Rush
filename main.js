@@ -805,11 +805,11 @@ function buildModConfig() {
 }
 
 function drawBackground() {
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#080b16';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.strokeStyle = 'rgba(100, 120, 200, 0.04)';
     const gridSize = 50;
 
     ctx.beginPath();
