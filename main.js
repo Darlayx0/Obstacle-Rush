@@ -805,7 +805,7 @@ function buildModConfig() {
 }
 
 function drawBackground() {
-    ctx.fillStyle = '#080b16';
+    ctx.fillStyle = '#050811';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.lineWidth = 1;
