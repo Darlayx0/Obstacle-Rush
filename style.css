@@ -1362,26 +1362,168 @@ button:active,
   color: var(--text-muted);
 }
 
-/* Game Over progress */
-.go-ach-container {
-  margin: 16px 0;
+/* ==================== GAME OVER (Premium) ==================== */
+.go-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   width: 100%;
 }
 
-.go-ach-row {
-  display: flex;
-  gap: 12px;
-}
-
-.go-ach-item {
-  flex: 1;
+.go-stat-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 4px;
+  padding: 20px 16px 16px;
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(100, 120, 200, 0.1);
 }
 
-.go-ach-label {
+.go-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.go-stat-time::before {
+  background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+}
+
+.go-stat-target::before {
+  background: linear-gradient(90deg, transparent, #facc15, transparent);
+}
+
+.go-stat-icon {
+  font-size: 1.6rem;
+  margin-bottom: 2px;
+}
+
+.go-stat-label {
   font-size: 0.7rem;
-  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--text-muted);
+  font-weight: 600;
+}
+
+.go-stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.go-stat-time .go-stat-value {
+  background: linear-gradient(135deg, #00d4ff, #67e8f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.go-stat-target .go-stat-value {
+  background: linear-gradient(135deg, #f59e0b, #fde68a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.go-stat-best {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.go-stat-delta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-top: 2px;
+  animation: deltaPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes deltaPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7) translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.go-delta-up {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.go-delta-new {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.15), rgba(0, 212, 255, 0.1));
+  color: #fde68a;
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+
+/* Game Over Achievement Progress */
+.go-ach-container {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.go-ach-section {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(100, 120, 200, 0.08);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.go-ach-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.go-ach-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.go-ach-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.go-ach-bar-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  min-width: 68px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.go-bar {
+  height: 6px;
+}
+
+.go-ach-bar-pct {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 30px;
+  text-align: right;
 }

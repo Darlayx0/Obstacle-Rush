@@ -330,17 +330,28 @@
     <!-- Game Over Menu -->
     <div id="gameOverMenu" class="menu-panel glassmorphism hidden">
       <h1 class="title loss-title">GAME <span class="accent-red">OVER</span></h1>
-      <div class="stats-container">
-        <div class="stat-box">
-          <span class="label">BERTAHAN</span>
-          <span id="finalScoreText" class="value">0,00s</span>
+
+      <!-- Score Stats Grid -->
+      <div class="go-stats-grid">
+        <div class="go-stat-card go-stat-time">
+          <span class="go-stat-icon">⏱️</span>
+          <span class="go-stat-label">Waktu Bertahan</span>
+          <span id="goTimeValue" class="go-stat-value">0,00s</span>
+          <span id="goTimeBest" class="go-stat-best">Terbaik: 0,00s</span>
+          <span id="goTimeDelta" class="go-stat-delta hidden"></span>
         </div>
-        <div class="stat-box">
-          <span class="label">TERBAIK</span>
-          <span id="gameOverHighScoreText" class="value highScoreValue">0,00s</span>
+        <div class="go-stat-card go-stat-target">
+          <span class="go-stat-icon">🎯</span>
+          <span class="go-stat-label">Target Terkumpul</span>
+          <span id="goTargetValue" class="go-stat-value">0</span>
+          <span id="goTargetBest" class="go-stat-best">Terbaik: 0</span>
+          <span id="goTargetDelta" class="go-stat-delta hidden"></span>
         </div>
       </div>
+
+      <!-- Achievement Progress -->
       <div id="gameOverAchProgress" class="go-ach-container"></div>
+
       <button id="restartBtn" class="primary-btn">COBA LAGI</button>
       <button id="menuBtn" class="secondary-btn">MENU UTAMA</button>
     </div>

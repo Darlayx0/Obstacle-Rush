@@ -919,12 +919,67 @@ function gameOver() {
     uiLayer.style.pointerEvents = 'auto';
     canvas.style.cursor = 'default';
 
+    // Capture previous bests BEFORE saving
+    const prevTimeBest = parseFloat(localStorage.getItem(getStoreKey())) || 0;
+    const prevTargetBest = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${currentMode}`)) || 0;
+
     if (currentMode !== 'custom') {
         saveHighScore();
         checkAchievements();
     }
 
-    updateScoreDisplay();
+    // Populate game over screen
+    const newTimeBest = parseFloat(localStorage.getItem(getStoreKey())) || 0;
+    const newTargetBest = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${currentMode}`)) || 0;
+
+    // Time stat card
+    const goTimeVal = document.getElementById('goTimeValue');
+    const goTimeBest = document.getElementById('goTimeBest');
+    const goTimeDelta = document.getElementById('goTimeDelta');
+    if (goTimeVal) goTimeVal.textContent = formatTime(timeSurvived);
+    if (goTimeBest) goTimeBest.textContent = `Terbaik: ${formatTime(newTimeBest)}`;
+    if (goTimeDelta) {
+        if (timeSurvived > prevTimeBest && prevTimeBest > 0) {
+            goTimeDelta.textContent = `+${formatTime(timeSurvived - prevTimeBest)} \u2B06`;
+            goTimeDelta.classList.remove('hidden');
+            goTimeDelta.classList.add('go-delta-up');
+        } else if (timeSurvived >= prevTimeBest && prevTimeBest === 0 && timeSurvived > 0) {
+            goTimeDelta.textContent = '\u2728 REKOR BARU!';
+            goTimeDelta.classList.remove('hidden');
+            goTimeDelta.classList.add('go-delta-new');
+        } else {
+            goTimeDelta.classList.add('hidden');
+            goTimeDelta.classList.remove('go-delta-up', 'go-delta-new');
+        }
+    }
+
+    // Target stat card
+    const goTargetVal = document.getElementById('goTargetValue');
+    const goTargetBest = document.getElementById('goTargetBest');
+    const goTargetDelta = document.getElementById('goTargetDelta');
+    if (goTargetVal) goTargetVal.textContent = targetScore;
+    if (goTargetBest) goTargetBest.textContent = `Terbaik: ${Math.floor(newTargetBest)}`;
+    if (goTargetDelta) {
+        if (targetHuntEnabled && targetScore > prevTargetBest && prevTargetBest > 0) {
+            goTargetDelta.textContent = `+${targetScore - Math.floor(prevTargetBest)} \u2B06`;
+            goTargetDelta.classList.remove('hidden');
+            goTargetDelta.classList.add('go-delta-up');
+        } else if (targetHuntEnabled && targetScore > 0 && prevTargetBest === 0) {
+            goTargetDelta.textContent = '\u2728 REKOR BARU!';
+            goTargetDelta.classList.remove('hidden');
+            goTargetDelta.classList.add('go-delta-new');
+        } else {
+            goTargetDelta.classList.add('hidden');
+            goTargetDelta.classList.remove('go-delta-up', 'go-delta-new');
+        }
+    }
+
+    // Target card visibility
+    const targetCard = document.querySelector('.go-stat-target');
+    if (targetCard) {
+        targetCard.style.display = targetHuntEnabled ? '' : 'none';
+    }
+
     updateGameOverProgress();
 
     hud.classList.add('hidden');
@@ -990,9 +1045,9 @@ function loadHighScore() {
     const timeHigh = parseFloat(localStorage.getItem(key)) || 0;
     const targetKey = `obstacleRushHighTarget_${currentMode}`;
     const targetHigh = parseFloat(localStorage.getItem(targetKey)) || 0;
-    let formattedMsg = formatTime(timeHigh);
+    let formattedMsg = `⏱️ ${formatTime(timeHigh)}`;
     if (targetHigh > 0) {
-        formattedMsg += ` | 🎯 ${Math.floor(targetHigh)}`;
+        formattedMsg += `  │  🎯 ${Math.floor(targetHigh)}`;
     }
     highScoreNodes.forEach(node => node.textContent = formattedMsg);
 }
@@ -1117,14 +1172,19 @@ function updateGameOverProgress() {
     if (!el || currentMode === 'custom') { if (el) el.innerHTML = ''; return; }
     const stats = getModeAchStats(currentMode);
     el.innerHTML = `
-        <div class="go-ach-row">
-            <div class="go-ach-item">
-                <span class="go-ach-label">⏱️ Waktu ${stats.timePct}%</span>
-                <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
-            </div>
-            <div class="go-ach-item">
-                <span class="go-ach-label">🎯 Target ${stats.targetPct}%</span>
-                <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
+        <div class="go-ach-section">
+            <div class="go-ach-title">Pencapaian Mode</div>
+            <div class="go-ach-bars">
+                <div class="go-ach-bar-row">
+                    <span class="go-ach-bar-label">⏱️ Waktu</span>
+                    <div class="ach-bar-bg go-bar"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
+                    <span class="go-ach-bar-pct">${stats.timePct}%</span>
+                </div>
+                <div class="go-ach-bar-row">
+                    <span class="go-ach-bar-label">🎯 Target</span>
+                    <div class="ach-bar-bg go-bar"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
+                    <span class="go-ach-bar-pct">${stats.targetPct}%</span>
+                </div>
             </div>
         </div>
     `;
