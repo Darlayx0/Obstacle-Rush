@@ -724,43 +724,59 @@ function setMode(modeKey) {
         customPanel.classList.add('hidden');
         highScoreContainer.classList.remove('hidden');
         loadHighScore();
-        updatePerfPreview(modeKey);
+        updateModeStatsPanel(modeKey);
     }
 }
 
-function updatePerfPreview(modeKey) {
-    const perfBars = document.getElementById('perfBars');
-    const perfBestLabel = document.getElementById('perfBestLabel');
-    const perfEl = document.getElementById('perfPreview');
-    if (!perfBars || !perfEl) return;
-    perfEl.style.display = '';
+function updateModeStatsPanel(modeKey) {
+    const panel = document.getElementById('modeStatsPanel');
+    if (!panel) return;
+    if (modeKey === 'custom') { panel.style.display = 'none'; return; }
+    panel.style.display = '';
 
     const key = `obstacleRushHigh_${modeKey}`;
-    const best = parseFloat(localStorage.getItem(key)) || 0;
+    const bestTime = parseFloat(localStorage.getItem(key)) || 0;
     const targetKey = `obstacleRushHighTarget_${modeKey}`;
     const bestTarget = parseFloat(localStorage.getItem(targetKey)) || 0;
+    const stats = getModeAchStats(modeKey);
 
-    if (perfBestLabel) {
-        perfBestLabel.textContent = best > 0 ? `Terbaik: ${formatTime(best)}` : '—';
-    }
-
-    // Generate 8 visual bars based on best score distribution
-    perfBars.innerHTML = '';
-    const barCount = 8;
-    for (let i = 0; i < barCount; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'perf-bar';
-        // Create a varied but proportional pattern
-        const variation = best > 0 ? (0.3 + Math.random() * 0.7) : 0.1;
-        const height = best > 0 ? Math.max(8, variation * 100) : 4;
-        bar.style.height = height + '%';
-        // Last bar = actual best (tallest)
-        if (i === barCount - 1 && best > 0) {
-            bar.style.height = '100%';
-            bar.style.background = 'linear-gradient(180deg, rgba(0, 212, 255, 0.7), rgba(99, 102, 241, 0.3))';
-        }
-        perfBars.appendChild(bar);
-    }
+    panel.innerHTML = `
+        <div class="msp-section">
+            <div class="msp-title">🏆 Rekor Terbaik</div>
+            <div class="msp-scores">
+                <div class="msp-score-item">
+                    <span class="msp-score-icon">⏱️</span>
+                    <span class="msp-score-label">Waktu</span>
+                    <span class="msp-score-val msp-val-cyan">${bestTime > 0 ? formatTime(bestTime) : '—'}</span>
+                </div>
+                <div class="msp-divider"></div>
+                <div class="msp-score-item">
+                    <span class="msp-score-icon">🎯</span>
+                    <span class="msp-score-label">Target</span>
+                    <span class="msp-score-val msp-val-gold">${bestTarget > 0 ? Math.floor(bestTarget) : '—'}</span>
+                </div>
+            </div>
+        </div>
+        <div class="msp-section">
+            <div class="msp-title">📊 Pencapaian</div>
+            <div class="msp-progress">
+                <div class="msp-bar-row">
+                    <span class="msp-bar-label">⏱️ Waktu</span>
+                    <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
+                    <span class="msp-bar-pct">${stats.timePct}%</span>
+                </div>
+                <div class="msp-bar-row">
+                    <span class="msp-bar-label">🎯 Target</span>
+                    <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
+                    <span class="msp-bar-pct">${stats.targetPct}%</span>
+                </div>
+            </div>
+            <div class="msp-overall">
+                <span>Keseluruhan</span>
+                <span class="msp-overall-pct">${stats.combinedPct}%</span>
+            </div>
+        </div>
+    `;
 }
 
 function applyPreset(presetMode) {
@@ -1209,8 +1225,41 @@ function getOverallAchStats() {
     return { avgTime, avgTarget, avgCombined, modeCount };
 }
 
-function resetAllAchievements() {
-    if (!confirm('Apakah Anda yakin ingin menghapus SEMUA pencapaian? Tindakan ini tidak dapat dibatalkan.')) return;
+function gameConfirm(title, message, yesLabel = 'Ya, Hapus') {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('customConfirmOverlay');
+        const titleEl = document.getElementById('confirmTitle');
+        const msgEl = document.getElementById('confirmMessage');
+        const yesBtn = document.getElementById('confirmYesBtn');
+        const noBtn = document.getElementById('confirmNoBtn');
+        if (!overlay) { resolve(confirm(message)); return; }
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        yesBtn.textContent = yesLabel;
+        overlay.classList.remove('hidden');
+
+        const cleanup = () => {
+            overlay.classList.add('hidden');
+            yesBtn.removeEventListener('click', onYes);
+            noBtn.removeEventListener('click', onNo);
+            overlay.removeEventListener('click', onOverlay);
+        };
+        const onYes = () => { cleanup(); resolve(true); };
+        const onNo = () => { cleanup(); resolve(false); };
+        const onOverlay = (e) => { if (e.target === overlay) { cleanup(); resolve(false); } };
+        yesBtn.addEventListener('click', onYes);
+        noBtn.addEventListener('click', onNo);
+        overlay.addEventListener('click', onOverlay);
+    });
+}
+
+async function resetAllAchievements() {
+    const confirmed = await gameConfirm(
+        '⚠️ Hapus Semua Pencapaian',
+        'Apakah Anda yakin ingin menghapus SEMUA pencapaian? Tindakan ini tidak dapat dibatalkan.',
+        'Ya, Hapus Semua'
+    );
+    if (!confirmed) return;
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
         localStorage.removeItem(getAchStoreKey(key, 'time'));
@@ -1218,6 +1267,9 @@ function resetAllAchievements() {
     }
     renderAchievementModal();
 }
+
+// Bind reset button via addEventListener (module scope fix)
+document.getElementById('resetAllAchievementsBtn')?.addEventListener('click', resetAllAchievements);
 
 function updateGameOverProgress() {
     const el = document.getElementById('gameOverAchProgress');
