@@ -45,6 +45,14 @@ const togLaser = document.getElementById('togLaser');
 const obsConfig = document.getElementById('obsConfig');
 const laserConfig = document.getElementById('laserConfig');
 
+const togPro = document.getElementById('togPro');
+const proConfig = document.getElementById('proConfig');
+const rngProSpawn = document.getElementById('rngProSpawn');
+const valProSpawn = document.getElementById('valProSpawn');
+
+const togChainsaw = document.getElementById('togChainsaw');
+const togBlackout = document.getElementById('togBlackout');
+
 const togBot = document.getElementById('togBot');
 const botLevelContainer = document.getElementById('botLevelContainer');
 const rngBotLevel = document.getElementById('rngBotLevel');
@@ -93,9 +101,9 @@ const MODES = {
     sluggish: { category: 'Spesial', label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan strategis. Obstacles bergerak lambat namun kemunculan beruntun, perlahan akan menutupi layar.', lives: 1, obsSpawn: 0.3, lasSpawn: 0, speed: 30, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
     lightning: { category: 'Spesial', label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 1.0, lasSpawn: 0, speed: 1000, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
     stalker: { category: 'Spesial', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal (zigzag) yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 110, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
-    proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: 'Peluru tembak dari layar dengan 3 gaya: Tembakan lurus super cepat, Peluru pelacak otomatis yang mengunci target, dan Shotgun burst menyebar secara sporadis.', lives: 3, obsSpawn: 0.7, lasSpawn: 0, speed: 200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, saveScore: true },
+    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal (zigzag) yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 110, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, saveScore: true },
+    proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: 'Peluru tembak dari layar dengan 3 gaya: Tembakan lurus super cepat, Peluru pelacak otomatis yang mengunci target, dan Shotgun burst menyebar secara sporadis.', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.7, speed: 200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, saveScore: true },
     custom: { category: 'Eksperimental', label: 'Custom', icon: '⚙️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
@@ -103,6 +111,7 @@ const MODES = {
 let entities = [];
 let obsSpawnTimer = 0;
 let lasSpawnTimer = 0;
+let proSpawnTimer = 0;
 
 // Game Config
 const MOUSE_FOLLOW_SPEED = 0.2; // Lerp factor
@@ -172,8 +181,8 @@ class Projectile {
             this.y = startY;
         }
 
-        const speedMult = 1 + (timeSurvived / 30);
-        let baseSpeed = modConfig.speed * speedMult * 1.5; // Projectiles are faster
+        const speedMult = 1 + (timeSurvived / 60);
+        let baseSpeed = modConfig.speed * speedMult * 1.2; // Projectiles slightly faster
 
         if (this.type === 'shotgun') {
             // If it's a raw shotgun spawn, immediately replace itself with 5 pellets and die
@@ -197,26 +206,31 @@ class Projectile {
         this.vx = Math.cos(angle) * baseSpeed;
         this.vy = Math.sin(angle) * baseSpeed;
         this.speed = baseSpeed;
+
+        if (this.type === 'homing') {
+            this.trackTimer = 1.5; // Only track for 1.5 seconds
+        }
     }
 
     update(dt) {
         if (this.dead) return;
 
         if (this.type === 'homing') {
-            const angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
-            // Steer towards player
-            const currentAngle = Math.atan2(this.vy, this.vx);
-            let angleDiff = angleToPlayer - currentAngle;
+            this.trackTimer -= dt;
+            if (this.trackTimer > 0) {
+                const angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
+                const currentAngle = Math.atan2(this.vy, this.vx);
+                let angleDiff = angleToPlayer - currentAngle;
 
-            // Normalize angle diff
-            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-            const turnSpeed = 3.0; // Rads per sec
-            const newAngle = currentAngle + Math.max(-turnSpeed * dt, Math.min(turnSpeed * dt, angleDiff));
+                const turnSpeed = 0.5; // Halved for easier juking
+                const newAngle = currentAngle + Math.max(-turnSpeed * dt, Math.min(turnSpeed * dt, angleDiff));
 
-            this.vx = Math.cos(newAngle) * this.speed;
-            this.vy = Math.sin(newAngle) * this.speed;
+                this.vx = Math.cos(newAngle) * this.speed;
+                this.vy = Math.sin(newAngle) * this.speed;
+            }
         }
 
         this.x += this.vx * dt;
@@ -284,12 +298,12 @@ class Obstacle {
         this.y += this.vy * dt;
 
         // Apply Chainsaw wave physics
-        if (currentMode === 'chainsaw') {
+        if (currentMode === 'chainsaw' || (currentMode === 'custom' && modConfig.chainsaw)) {
             const len = Math.sqrt(this.vx * this.vx + this.vy * this.vy) || 1;
             const perpX = -this.vy / len;
             const perpY = this.vx / len;
-            const waveAmplitude = 150;
-            const waveSpeed = 8;
+            const waveAmplitude = 400;
+            const waveSpeed = 2;
             const wave = Math.sin(timeSurvived * waveSpeed) * waveAmplitude * dt;
             this.x += perpX * wave;
             this.y += perpY * wave;
@@ -307,6 +321,7 @@ class Obstacle {
     }
 
     isDead() {
+        if (this.dead) return true;
         const margin = this.radius * 2;
         return (this.x < -margin || this.x > canvas.width + margin || this.y < -margin || this.y > canvas.height + margin);
     }
@@ -332,6 +347,7 @@ class Laser {
     }
 
     update(dt) {
+        if (this.dead) return;
         this.timer += dt;
         if (this.phase === 'warning' && this.timer >= modConfig.lasWarn) {
             this.phase = 'active';
@@ -342,7 +358,7 @@ class Laser {
     }
 
     draw(ctx) {
-        if (this.phase === 'dead') return;
+        if (this.phase === 'dead' || this.dead) return;
 
         ctx.beginPath();
         ctx.moveTo(this.x1, this.y1);
@@ -364,6 +380,7 @@ class Laser {
     }
 
     isDead() {
+        if (this.dead) return true;
         return this.phase === 'dead';
     }
 }
@@ -453,7 +470,6 @@ function init() {
         }
     });
 
-    // Engine Toggles
     togObs.addEventListener('change', (e) => {
         if (e.target.checked) obsConfig.classList.remove('hidden-content');
         else obsConfig.classList.add('hidden-content');
@@ -462,16 +478,22 @@ function init() {
         if (e.target.checked) laserConfig.classList.remove('hidden-content');
         else laserConfig.classList.add('hidden-content');
     });
+    togPro.addEventListener('change', (e) => {
+        if (e.target.checked) proConfig.classList.remove('hidden-content');
+        else proConfig.classList.add('hidden-content');
+    });
     togBot.addEventListener('change', (e) => {
         isBotPlaying = e.target.checked;
         const botContainer = document.querySelector('.bot-controller');
         if (e.target.checked) {
             botLevelContainer.classList.remove('hidden-content');
+            botContainer.classList.remove('bot-collapsed');
             document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
             botContainer.style.background = 'rgba(0,0,0,0.4)';
             botContainer.style.borderColor = 'rgba(6, 182, 212, 0.3)';
         } else {
             botLevelContainer.classList.add('hidden-content');
+            botContainer.classList.add('bot-collapsed');
             document.getElementById('startBtn').innerHTML = 'MAIN SEKARANG <span class="arrow">→</span>';
             botContainer.style.background = 'rgba(0,0,0,0.1)';
             botContainer.style.borderColor = 'rgba(255,255,255,0.05)';
@@ -491,6 +513,7 @@ function init() {
     };
     syncVal(rngObsSpawn, valObsSpawn, 's');
     syncVal(rngLaserSpawn, valLaserSpawn, 's');
+    syncVal(rngProSpawn, valProSpawn, 's');
     syncVal(rngSpeed, valSpeed, '');
     syncVal(rngTrack, valTrack, 'x');
     syncVal(rngLives, valLives, '');
@@ -584,6 +607,19 @@ function applyPreset(presetMode) {
     valLaserWarn.textContent = parseFloat(rngLaserWarn.value).toFixed(2) + 's';
     rngLaserGrowth.value = mode.lasGrowth || 0.99;
     valLaserGrowth.textContent = parseFloat(rngLaserGrowth.value).toFixed(2) + 'x';
+
+    if (mode.proSpawn > 0) {
+        togPro.checked = true;
+        proConfig.classList.remove('hidden-content');
+        rngProSpawn.value = mode.proSpawn;
+        valProSpawn.textContent = mode.proSpawn.toFixed(2) + 's';
+    } else {
+        togPro.checked = false;
+        proConfig.classList.add('hidden-content');
+    }
+
+    togChainsaw.checked = !!mode.chainsaw;
+    togBlackout.checked = !!mode.blackout;
 }
 
 function buildModConfig() {
@@ -591,12 +627,15 @@ function buildModConfig() {
         modConfig = {
             obsSpawn: togObs.checked ? parseFloat(rngObsSpawn.value) : 0,
             lasSpawn: togLaser.checked ? parseFloat(rngLaserSpawn.value) : 0,
+            proSpawn: togPro.checked ? parseFloat(rngProSpawn.value) : 0,
             speed: parseFloat(rngSpeed.value),
             track: parseFloat(rngTrack.value),
             lives: parseInt(rngLives.value),
             obsGrowth: parseFloat(rngObsGrowth.value),
             lasGrowth: parseFloat(rngLaserGrowth.value),
-            lasWarn: parseFloat(rngLaserWarn.value)
+            lasWarn: parseFloat(rngLaserWarn.value),
+            chainsaw: togChainsaw.checked,
+            blackout: togBlackout.checked
         };
     } else {
         modConfig = MODES[currentMode];
@@ -640,17 +679,15 @@ function togglePause() {
     }
 }
 
-function takeDamage() {
-    if (isInvulnerable) return;
-
+function takeDamage(entity) {
     playerLives--;
     updateLivesDisplay();
 
+    // Mark entity as dead instantly so it doesn't drain another life on the next frame
+    if (entity) entity.dead = true;
+
     if (playerLives <= 0) {
         gameOver();
-    } else {
-        isInvulnerable = true;
-        invulnerableTimer = 0;
     }
 }
 
@@ -672,6 +709,7 @@ function startGame() {
     entities = [];
     obsSpawnTimer = 0;
     lasSpawnTimer = 0;
+    proSpawnTimer = 0;
 
     playerLives = modConfig.lives || 1;
     maxLives = playerLives;
@@ -831,7 +869,7 @@ function pointLineDistance(px, py, x1, y1, x2, y2) {
 
 
 function checkCollision(p, entity) {
-    if (entity instanceof Obstacle) {
+    if (entity instanceof Obstacle || entity instanceof Projectile) {
         const dx = p.x - entity.x;
         const dy = p.y - entity.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -853,19 +891,10 @@ function gameLoop(currentTime) {
     const safeDt = Math.min(dt, 0.1);
     timeSurvived += safeDt;
 
-    if (isInvulnerable) {
-        invulnerableTimer += safeDt;
-        if (invulnerableTimer >= 1.0) {
-            isInvulnerable = false;
-        }
-    }
-
     drawBackground();
     updateScoreDisplay();
 
     // Determine current effective spawn rates
-    // Spawn rate intervals decrease (get faster) over time multiplied by growth constant
-    // Examples: 0.99x shrinks the interval by 1% per second
     let oRate = 0;
     if (modConfig.obsSpawn > 0) {
         const growthPower = Math.pow(modConfig.obsGrowth, timeSurvived);
@@ -878,15 +907,16 @@ function gameLoop(currentTime) {
         lRate = Math.max(0.1, modConfig.lasSpawn * growthPower);
     }
 
+    let pRate = 0;
+    if (modConfig.proSpawn > 0) {
+        pRate = modConfig.proSpawn;
+    }
+
     // Obstacle Spawner
     if (oRate > 0) {
         obsSpawnTimer += safeDt;
         if (obsSpawnTimer >= oRate) {
-            if (currentMode === 'proyektil') {
-                entities.push(new Projectile());
-            } else {
-                entities.push(new Obstacle());
-            }
+            entities.push(new Obstacle());
             obsSpawnTimer = 0;
         }
     }
@@ -897,6 +927,15 @@ function gameLoop(currentTime) {
         if (lasSpawnTimer >= lRate) {
             entities.push(new Laser());
             lasSpawnTimer = 0;
+        }
+    }
+
+    // Projectile Spawner
+    if (pRate > 0) {
+        proSpawnTimer += safeDt;
+        if (proSpawnTimer >= pRate) {
+            entities.push(new Projectile());
+            proSpawnTimer = 0;
         }
     }
 
@@ -914,7 +953,7 @@ function gameLoop(currentTime) {
         entity.draw(ctx);
 
         if (checkCollision(player, entity)) {
-            takeDamage();
+            takeDamage(entity);
         }
 
         if (entity.isDead()) {
@@ -922,25 +961,21 @@ function gameLoop(currentTime) {
         }
     }
 
-    if (currentMode === 'blackout') {
+    if (currentMode === 'blackout' || (currentMode === 'custom' && modConfig.blackout)) {
         const cx = player.x;
         const cy = player.y;
+        const radius = 250;
+        const maxDim = Math.max(canvas.width, canvas.height) * 1.5;
+
+        const gradient = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, maxDim);
+        gradient.addColorStop(0, 'rgba(5, 5, 8, 0)');
+        gradient.addColorStop(radius / maxDim, 'rgba(5, 5, 8, 0.4)');
+        gradient.addColorStop(Math.min((radius * 1.5) / maxDim, 0.99), 'rgba(5, 5, 8, 0.95)');
+        gradient.addColorStop(1, 'rgba(5, 5, 8, 1)');
 
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = 'rgba(5, 5, 8, 0.98)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.globalCompositeOperation = 'destination-out';
-        const radius = 180;
-        const gradient = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, radius);
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-        gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.8)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     animationId = requestAnimationFrame(gameLoop);

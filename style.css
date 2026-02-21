@@ -1061,3 +1061,13 @@ button:active,
   color: #fff;
   padding: 12px;
 }
+
+.hidden-content {
+  display: none !important;
+}
+
+.bot-collapsed {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
