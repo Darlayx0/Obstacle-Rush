@@ -79,6 +79,7 @@ const livesText = document.getElementById('livesText');
 let animationId;
 let lastTime = 0;
 let timeSurvived = 0; // in seconds
+let targetScore = 0; // for target hunt mode
 let isPlaying = false;
 let isPaused = false;
 
@@ -122,6 +123,7 @@ const MODES = {
     chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     disguise: { category: 'Eksperimental', label: 'Disguise', icon: '🔴', desc: 'Player terlihat identik dengan rintangan — merah, tanpa glow, ukuran sama. Bisakah Anda melacak diri sendiri di antara kerumunan?', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    targetHunt: { category: 'Tantangan', label: 'Target Hunt', icon: '🎯', desc: 'Kumpulkan target berwarna emas yang muncul secara acak! Hindari rintangan sambil memburu skor tertinggi.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true, scoreType: 'target', targetSpawn: 2.0, targetDelay: 10 },
     custom: { category: 'Kustom', label: 'Custom', icon: '🛠️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
@@ -130,6 +132,7 @@ let entities = [];
 let obsSpawnTimer = 0;
 let lasSpawnTimer = 0;
 let proSpawnTimer = 0;
+let targetSpawnTimer = 0;
 
 // Game Config
 const MOUSE_FOLLOW_SPEED = 0.2; // Lerp factor
@@ -441,6 +444,51 @@ class Laser {
     }
 }
 
+class Target {
+    constructor() {
+        this.radius = 12;
+        this.x = this.radius + Math.random() * (canvas.width - this.radius * 2);
+        this.y = this.radius + Math.random() * (canvas.height - this.radius * 2);
+        this.collected = false;
+        this.pulsePhase = Math.random() * Math.PI * 2;
+    }
+
+    update(dt) {
+        this.pulsePhase += dt * 4;
+    }
+
+    draw(ctx) {
+        if (this.collected) return;
+        const pulse = 1 + Math.sin(this.pulsePhase) * 0.25;
+        const r = this.radius * pulse;
+
+        // Outer glow
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, r + 6, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.15)';
+        ctx.fill();
+
+        // Main circle
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#facc15';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#facc15';
+        ctx.fill();
+
+        // Inner dot
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, r * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = '#fef08a';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+
+    isDead() {
+        return this.collected;
+    }
+}
+
 let player = new Player();
 let mirrorPlayer = null; // Used in mirrorPlayer mode
 
@@ -486,6 +534,16 @@ function init() {
         }
         renderProgressList();
         loadHighScore();
+    });
+
+    // Achievement modal
+    document.getElementById('showAchievementBtn').addEventListener('click', () => {
+        renderAchievementModal();
+        document.getElementById('mainMenu').style.display = 'none';
+    });
+    document.getElementById('closeAchievementBtn').addEventListener('click', () => {
+        document.getElementById('achievementModal').classList.add('hidden');
+        document.getElementById('mainMenu').style.display = 'flex';
     });
 
     // Populate Preset Select Dropdown
@@ -799,10 +857,12 @@ function startGame() {
     isPlaying = true;
     isPaused = false;
     timeSurvived = 0;
+    targetScore = 0;
     entities = [];
     obsSpawnTimer = 0;
     lasSpawnTimer = 0;
     proSpawnTimer = 0;
+    targetSpawnTimer = 0;
 
     // Initialize mirror player for mirrorPlayer mode
     if (currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) {
@@ -850,6 +910,7 @@ function gameOver() {
 
     if (currentMode !== 'custom') {
         saveHighScore();
+        checkAchievements();
     }
 
     updateScoreDisplay();
@@ -880,9 +941,18 @@ function formatTime(seconds) {
     return seconds.toFixed(2).replace('.', ',') + 's';
 }
 
+function isTargetMode() {
+    return modConfig.scoreType === 'target';
+}
+
 function updateScoreDisplay() {
-    const formattedMsg = formatTime(timeSurvived);
-    scoreTextNodes.forEach(node => node.textContent = formattedMsg);
+    if (isTargetMode()) {
+        const msg = `🎯 ${targetScore}`;
+        scoreTextNodes.forEach(node => node.textContent = msg);
+    } else {
+        const formattedMsg = formatTime(timeSurvived);
+        scoreTextNodes.forEach(node => node.textContent = formattedMsg);
+    }
 }
 
 function getStoreKey() {
@@ -890,18 +960,30 @@ function getStoreKey() {
 }
 
 function saveHighScore() {
-    if (isBotPlaying) return; // Never save score if bot is playing
+    if (isBotPlaying) return;
     const key = getStoreKey();
     const currentHigh = parseFloat(localStorage.getItem(key)) || 0;
-    if (timeSurvived > currentHigh) {
-        localStorage.setItem(key, timeSurvived.toString());
+    if (isTargetMode()) {
+        if (targetScore > currentHigh) {
+            localStorage.setItem(key, targetScore.toString());
+        }
+    } else {
+        if (timeSurvived > currentHigh) {
+            localStorage.setItem(key, timeSurvived.toString());
+        }
     }
 }
 
 function loadHighScore() {
     const key = getStoreKey();
     const high = parseFloat(localStorage.getItem(key)) || 0;
-    const formattedMsg = formatTime(high);
+    const mode = MODES[currentMode];
+    let formattedMsg;
+    if (mode && mode.scoreType === 'target') {
+        formattedMsg = `🎯 ${Math.floor(high)}`;
+    } else {
+        formattedMsg = formatTime(high);
+    }
     highScoreNodes.forEach(node => node.textContent = formattedMsg);
 }
 
@@ -917,11 +999,13 @@ function renderProgressList() {
         const item = document.createElement('div');
         item.className = 'progress-item';
 
+        const scoreDisplay = mode.scoreType === 'target' ? `🎯 ${Math.floor(high)}` : formatTime(high);
+
         item.innerHTML = `
             <div class="mode-name">
                 <span class="mode-icon">${mode.icon}</span> ${mode.label}
             </div>
-            <span class="score-val">${formatTime(high)}</span>
+            <span class="score-val">${scoreDisplay}</span>
             <div class="progress-actions">
                 <button class="delete-single-btn" data-mode="${key}" title="Hapus Skor">✕</button>
             </div>
@@ -938,6 +1022,106 @@ function renderProgressList() {
         });
     });
 }
+
+// ==================== ACHIEVEMENT SYSTEM ====================
+const TIME_MILESTONES = [30, 60, 90, 120, 150];
+const TARGET_MILESTONES = [10, 20, 30, 40, 50];
+
+function getAchievementKey(modeKey, milestone) {
+    return `obstacleRushAch_${modeKey}_${milestone}`;
+}
+
+function checkAchievements() {
+    if (isBotPlaying || currentMode === 'custom') return;
+    const mode = MODES[currentMode];
+    if (!mode || !mode.saveScore) return;
+
+    if (mode.scoreType === 'target') {
+        TARGET_MILESTONES.forEach(m => {
+            if (targetScore >= m) {
+                localStorage.setItem(getAchievementKey(currentMode, m), '1');
+            }
+        });
+    } else {
+        TIME_MILESTONES.forEach(m => {
+            if (timeSurvived >= m) {
+                localStorage.setItem(getAchievementKey(currentMode, m), '1');
+            }
+        });
+    }
+}
+
+function getAchievementStats(modeKey) {
+    const mode = MODES[modeKey];
+    const milestones = (mode && mode.scoreType === 'target') ? TARGET_MILESTONES : TIME_MILESTONES;
+    let completed = 0;
+    const total = milestones.length;
+    milestones.forEach(m => {
+        if (localStorage.getItem(getAchievementKey(modeKey, m))) completed++;
+    });
+    return { completed, total, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
+}
+
+function getOverallAchievementStats() {
+    let completed = 0;
+    let total = 0;
+    for (const [key, mode] of Object.entries(MODES)) {
+        if (!mode.saveScore) continue;
+        const stats = getAchievementStats(key);
+        completed += stats.completed;
+        total += stats.total;
+    }
+    return { completed, total, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
+}
+
+function renderAchievementModal() {
+    const modal = document.getElementById('achievementModal');
+    const content = document.getElementById('achievementContent');
+    if (!content) return;
+    content.innerHTML = '';
+
+    // Overall stats
+    const overall = getOverallAchievementStats();
+    const overallDiv = document.createElement('div');
+    overallDiv.className = 'ach-overall';
+    overallDiv.innerHTML = `
+        <div class="ach-overall-header">
+            <span class="ach-overall-title">🏆 Keseluruhan</span>
+            <span class="ach-overall-stat">${overall.completed}/${overall.total} (${overall.percent}%)</span>
+        </div>
+        <div class="ach-bar-bg"><div class="ach-bar-fill" style="width: ${overall.percent}%"></div></div>
+    `;
+    content.appendChild(overallDiv);
+
+    // Per-mode sections
+    for (const [key, mode] of Object.entries(MODES)) {
+        if (!mode.saveScore) continue;
+        const stats = getAchievementStats(key);
+        const milestones = (mode.scoreType === 'target') ? TARGET_MILESTONES : TIME_MILESTONES;
+        const isTarget = mode.scoreType === 'target';
+
+        const section = document.createElement('div');
+        section.className = 'ach-mode-section';
+        section.innerHTML = `
+            <div class="ach-mode-header">
+                <span>${mode.icon} ${mode.label}</span>
+                <span class="ach-mode-stat">${stats.completed}/${stats.total} (${stats.percent}%)</span>
+            </div>
+            <div class="ach-bar-bg"><div class="ach-bar-fill" style="width: ${stats.percent}%"></div></div>
+            <div class="ach-milestones">
+                ${milestones.map(m => {
+            const done = !!localStorage.getItem(getAchievementKey(key, m));
+            const label = isTarget ? `🎯 ${m} target` : `⏱️ ${m}s`;
+            return `<span class="ach-milestone ${done ? 'done' : ''}">${done ? '✅' : '⬜'} ${label}</span>`;
+        }).join('')}
+            </div>
+        `;
+        content.appendChild(section);
+    }
+
+    modal.classList.remove('hidden');
+}
+
 
 function pointLineDistance(px, py, x1, y1, x2, y2) {
     const A = px - x1;
@@ -1057,6 +1241,19 @@ function gameLoop(currentTime) {
         }
     }
 
+    // Target Spawner (Target Hunt mode)
+    if (modConfig.scoreType === 'target' && modConfig.targetSpawn > 0) {
+        if (timeSurvived >= (modConfig.targetDelay || 10)) {
+            targetSpawnTimer += safeDt;
+            // Only spawn if no active target exists
+            const hasActiveTarget = entities.some(e => e instanceof Target && !e.collected);
+            if (!hasActiveTarget && targetSpawnTimer >= modConfig.targetSpawn) {
+                entities.push(new Target());
+                targetSpawnTimer = 0;
+            }
+        }
+    }
+
     if (isBotPlaying) {
         updateBot(safeDt);
     } else {
@@ -1091,13 +1288,22 @@ function gameLoop(currentTime) {
         entity.update(safeDt);
         entity.draw(ctx);
 
-        if (checkCollision(player, entity)) {
+        // Target collection (not damage)
+        if (entity instanceof Target && !entity.collected) {
+            const dx = player.x - entity.x;
+            const dy = player.y - entity.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < (player.radius + entity.radius)) {
+                entity.collected = true;
+                targetScore++;
+            }
+        } else if (checkCollision(player, entity)) {
             takeDamage(entity);
         }
 
         // Mirror Player collision check
         if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer && !entity.dead) {
-            if (checkCollision(mirrorPlayer, entity)) {
+            if (!(entity instanceof Target) && checkCollision(mirrorPlayer, entity)) {
                 takeDamage(entity);
             }
         }
@@ -1132,12 +1338,14 @@ function updateBot(dt) {
     let forceX = 0;
     let forceY = 0;
 
-    // Soft pull towards center (keeps bot from drifting to edges)
+    // Strong pull towards center (keeps bot playing in center area)
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const distCenter = Math.sqrt(Math.pow(centerX - player.x, 2) + Math.pow(centerY - player.y, 2)) || 1;
-    forceX += ((centerX - player.x) / distCenter) * 80;
-    forceY += ((centerY - player.y) / distCenter) * 80;
+    const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+    const centerPull = 150 + (distCenter / maxDist) * 200; // Stronger pull when further from center
+    forceX += ((centerX - player.x) / distCenter) * centerPull;
+    forceY += ((centerY - player.y) / distCenter) * centerPull;
 
     // Wall repulsion (strong exponential push away from edges AND corners)
     const margin = 80;

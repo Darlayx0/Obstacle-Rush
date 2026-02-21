@@ -67,8 +67,10 @@
         <!-- Relocated Progress Button -->
         <div
           style="padding: 24px 32px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; background: rgba(0,0,0,0.3);">
-          <button id="showProgressBtn" class="floating-progress-btn" style="width: 100%;">📊 Lihat Semua
-            Progres</button>
+          <div style="display: flex; gap: 8px;">
+            <button id="showProgressBtn" class="floating-progress-btn" style="flex: 1;">📊 Progres</button>
+            <button id="showAchievementBtn" class="floating-progress-btn" style="flex: 1;">🏆 Pencapaian</button>
+          </div>
         </div>
       </div>
 
@@ -286,6 +288,20 @@
           style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
           <button id="resetAllProgressBtn" class="danger-btn">🔥 Hapus Semua Data</button>
           <button id="closeProgressBtn" class="secondary-btn">Tutup Papan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievement Modal -->
+    <div id="achievementModal" class="menu-panel glassmorphism hidden">
+      <div class="modal-content glassmorphism" onclick="event.stopPropagation()">
+        <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">🏆 <span class="accent">Pencapaian</span></h2>
+        <div id="achievementContent" class="achievement-list">
+          <!-- Dynamically populated by renderAchievementModal -->
+        </div>
+        <div
+          style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); text-align: right;">
+          <button id="closeAchievementBtn" class="secondary-btn">Tutup</button>
         </div>
       </div>
     </div>
