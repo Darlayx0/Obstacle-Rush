@@ -83,14 +83,14 @@
         </div>
 
         <div id="customPanel" class="custom-panel hidden">
-          <!-- Preset Buttons -->
-          <div class="preset-group">
-            <button id="btnPresetDefault" class="preset-btn" title="Kembalikan ke awal">⟲ Default</button>
-            <button id="btnPresetObs" class="preset-btn">🔴 Classic</button>
-            <button id="btnPresetLas" class="preset-btn">💥 Lasers</button>
-            <button id="btnPresetStk" class="preset-btn">👁️ Stalker</button>
+          <!-- Preset Dropdown -->
+          <div class="preset-group" style="display: flex; gap: 12px; align-items: center; margin-bottom: 24px;">
+            <label style="color: var(--text-muted); font-size: 0.9rem;">Muat Presetal Dasar:</label>
+            <select id="presetSelect" class="cyber-select"
+              style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); color: white; border: 1px solid var(--glass-border); font-family: 'Outfit', sans-serif; cursor: pointer; outline: none;">
+              <!-- Options populated by JS -->
+            </select>
           </div>
-
           <!-- CSS Grid Layout for Sub-Panels -->
           <div class="custom-grid">
 

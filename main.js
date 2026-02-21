@@ -93,6 +93,9 @@ const MODES = {
     sluggish: { category: 'Spesial', label: 'Sluggish (Siput)', icon: '🐌', desc: 'Tantangan strategis. Obstacles bergerak lambat namun kemunculan beruntun, perlahan akan menutupi layar.', lives: 1, obsSpawn: 0.3, lasSpawn: 0, speed: 30, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
     lightning: { category: 'Spesial', label: 'Lightning (Fast)', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 1.0, lasSpawn: 0, speed: 1000, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
     stalker: { category: 'Spesial', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal (zigzag) yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, speed: 110, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
+    proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: 'Peluru tembak dari layar dengan 3 gaya: Tembakan lurus super cepat, Peluru pelacak otomatis yang mengunci target, dan Shotgun burst menyebar secara sporadis.', lives: 3, obsSpawn: 0.7, lasSpawn: 0, speed: 200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, saveScore: true },
     custom: { category: 'Eksperimental', label: 'Custom', icon: '⚙️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
@@ -151,6 +154,93 @@ class Player {
     }
 }
 
+class Projectile {
+    constructor(type = null, startX = null, startY = null, targetAngle = null) {
+        this.radius = 6;
+        const types = ['bullet', 'homing', 'shotgun'];
+        this.type = type || types[Math.floor(Math.random() * types.length)];
+
+        // Spawn edge logic (same as obstacle) if not provided
+        if (startX === null || startY === null) {
+            const edge = Math.floor(Math.random() * 4);
+            if (edge === 0) { this.x = Math.random() * canvas.width; this.y = -this.radius; }
+            else if (edge === 1) { this.x = canvas.width + this.radius; this.y = Math.random() * canvas.height; }
+            else if (edge === 2) { this.x = Math.random() * canvas.width; this.y = canvas.height + this.radius; }
+            else { this.x = -this.radius; this.y = Math.random() * canvas.height; }
+        } else {
+            this.x = startX;
+            this.y = startY;
+        }
+
+        const speedMult = 1 + (timeSurvived / 30);
+        let baseSpeed = modConfig.speed * speedMult * 1.5; // Projectiles are faster
+
+        if (this.type === 'shotgun') {
+            // If it's a raw shotgun spawn, immediately replace itself with 5 pellets and die
+            if (targetAngle === null) {
+                const angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
+                for (let i = -2; i <= 2; i++) {
+                    const spread = angleToPlayer + (i * 0.2); // 0.2 rad spread
+                    entities.push(new Projectile('bullet', this.x, this.y, spread));
+                }
+                this.dead = true;
+                return;
+            }
+        }
+
+        const angle = targetAngle !== null ? targetAngle : Math.atan2(player.y - this.y, player.x - this.x);
+
+        if (this.type === 'homing') {
+            baseSpeed *= 0.6; // Homing is slower
+        }
+
+        this.vx = Math.cos(angle) * baseSpeed;
+        this.vy = Math.sin(angle) * baseSpeed;
+        this.speed = baseSpeed;
+    }
+
+    update(dt) {
+        if (this.dead) return;
+
+        if (this.type === 'homing') {
+            const angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
+            // Steer towards player
+            const currentAngle = Math.atan2(this.vy, this.vx);
+            let angleDiff = angleToPlayer - currentAngle;
+
+            // Normalize angle diff
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+            const turnSpeed = 3.0; // Rads per sec
+            const newAngle = currentAngle + Math.max(-turnSpeed * dt, Math.min(turnSpeed * dt, angleDiff));
+
+            this.vx = Math.cos(newAngle) * this.speed;
+            this.vy = Math.sin(newAngle) * this.speed;
+        }
+
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+    }
+
+    draw(ctx) {
+        if (this.dead) return;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.type === 'homing' ? '#fbbf24' : '#f87171'; // Amber for homing, red for bullets
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+
+    isDead() {
+        if (this.dead) return true;
+        const margin = this.radius * 2;
+        return (this.x < -margin || this.x > canvas.width + margin || this.y < -margin || this.y > canvas.height + margin);
+    }
+}
+
 class Obstacle {
     constructor() {
         this.radius = SIZES[Math.floor(Math.random() * SIZES.length)];
@@ -192,6 +282,18 @@ class Obstacle {
 
         this.x += this.vx * dt;
         this.y += this.vy * dt;
+
+        // Apply Chainsaw wave physics
+        if (currentMode === 'chainsaw') {
+            const len = Math.sqrt(this.vx * this.vx + this.vy * this.vy) || 1;
+            const perpX = -this.vy / len;
+            const perpY = this.vx / len;
+            const waveAmplitude = 150;
+            const waveSpeed = 8;
+            const wave = Math.sin(timeSurvived * waveSpeed) * waveAmplitude * dt;
+            this.x += perpX * wave;
+            this.y += perpY * wave;
+        }
     }
 
     draw(ctx) {
@@ -298,9 +400,11 @@ function init() {
     document.getElementById('showProgressBtn').addEventListener('click', () => {
         renderProgressList();
         document.getElementById('progressModal').classList.remove('hidden');
+        document.getElementById('mainMenu').style.display = 'none';
     });
     document.getElementById('closeProgressBtn').addEventListener('click', () => {
         document.getElementById('progressModal').classList.add('hidden');
+        document.getElementById('mainMenu').style.display = 'flex';
     });
     document.getElementById('resetAllProgressBtn').addEventListener('click', () => {
         for (const key of Object.keys(MODES)) {
@@ -310,15 +414,21 @@ function init() {
         loadHighScore();
     });
 
-    document.getElementById('btnPresetDefault').addEventListener('click', () => applyPreset('obstacle'));
-    document.getElementById('btnPresetObs').addEventListener('click', () => applyPreset('obstacle'));
-    document.getElementById('btnPresetLas').addEventListener('click', () => applyPreset('laser'));
-    document.getElementById('btnPresetStk').addEventListener('click', () => applyPreset('stalker'));
+    // Populate Preset Select Dropdown
+    const presetSelect = document.getElementById('presetSelect');
+    presetSelect.innerHTML = '<option value="" disabled selected>-- Pilih Mode Dasar --</option>';
 
     // Build interactive mode UI hierarchically
     modeList.innerHTML = '';
     let currentCat = '';
     for (const [key, mode] of Object.entries(MODES)) {
+        if (key !== 'custom') {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = `${mode.icon} ${mode.label}`;
+            presetSelect.appendChild(opt);
+        }
+
         if (mode.category !== currentCat) {
             currentCat = mode.category;
             const catHeader = document.createElement('div');
@@ -335,6 +445,14 @@ function init() {
         modeList.appendChild(card);
     }
 
+    presetSelect.addEventListener('change', (e) => {
+        if (e.target.value) {
+            applyPreset(e.target.value);
+            // Optional: reset select back to default after applying so it acts like a button
+            e.target.value = "";
+        }
+    });
+
     // Engine Toggles
     togObs.addEventListener('change', (e) => {
         if (e.target.checked) obsConfig.classList.remove('hidden-content');
@@ -346,12 +464,17 @@ function init() {
     });
     togBot.addEventListener('change', (e) => {
         isBotPlaying = e.target.checked;
+        const botContainer = document.querySelector('.bot-controller');
         if (e.target.checked) {
             botLevelContainer.classList.remove('hidden-content');
             document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
+            botContainer.style.background = 'rgba(0,0,0,0.4)';
+            botContainer.style.borderColor = 'rgba(6, 182, 212, 0.3)';
         } else {
             botLevelContainer.classList.add('hidden-content');
             document.getElementById('startBtn').innerHTML = 'MAIN SEKARANG <span class="arrow">→</span>';
+            botContainer.style.background = 'rgba(0,0,0,0.1)';
+            botContainer.style.borderColor = 'rgba(255,255,255,0.05)';
         }
     });
 
@@ -759,17 +882,12 @@ function gameLoop(currentTime) {
     if (oRate > 0) {
         obsSpawnTimer += safeDt;
         if (obsSpawnTimer >= oRate) {
-            entities.push(new Obstacle());
+            if (currentMode === 'proyektil') {
+                entities.push(new Projectile());
+            } else {
+                entities.push(new Obstacle());
+            }
             obsSpawnTimer = 0;
-        }
-    }
-
-    // Laser Spawner
-    if (lRate > 0) {
-        lasSpawnTimer += safeDt;
-        if (lasSpawnTimer >= lRate) {
-            entities.push(new Laser());
-            lasSpawnTimer = 0;
         }
     }
 
@@ -802,6 +920,27 @@ function gameLoop(currentTime) {
         if (entity.isDead()) {
             entities.splice(i, 1);
         }
+    }
+
+    if (currentMode === 'blackout') {
+        const cx = player.x;
+        const cy = player.y;
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(5, 5, 8, 0.98)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.globalCompositeOperation = 'destination-out';
+        const radius = 180;
+        const gradient = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, radius);
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+        gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.8)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
     }
 
     animationId = requestAnimationFrame(gameLoop);
