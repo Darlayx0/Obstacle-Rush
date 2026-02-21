@@ -38,28 +38,11 @@
     <div id="mainMenu" class="menu-layout glassmorphism active">
       <div class="menu-left">
         <div class="menu-header">
-          <h1 class="title">OBSTACLE<br><span class="accent">RUSH</span></h1>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h1 class="title">OBSTACLE<br><span class="accent">RUSH</span></h1>
+            <button id="showSettingsBtn" class="icon-btn settings-icon" title="Pengaturan">⚙️</button>
+          </div>
           <p class="subtitle">Pilih Mode Bermain</p>
-        </div>
-
-        <!-- Relocated Bot Controller UI -->
-        <div class="bot-controller"
-          style="margin: 0 32px 16px 32px; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
-          <div class="bot-toggle-row">
-            <span class="bot-label text-sm" style="font-size: 0.8rem;">🤖 Tonton Bot AI Bermain</span>
-            <label class="toggle-switch" style="transform: scale(0.8); transform-origin: right center;">
-              <input type="checkbox" id="togBot">
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <div id="botLevelContainer" class="bot-level-container hidden-content"
-            style="padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-            <label
-              style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; width: 100%;">Tingkat
-              AI: <span id="valBotLevel" class="val-badge bot-badge" style="padding: 2px 6px; font-size: 0.7rem;">1 -
-                Noob</span></label>
-            <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1">
-          </div>
         </div>
 
         <!-- Target Hunt Toggle -->
@@ -76,13 +59,10 @@
           <!-- Dynamically populated by JS -->
         </div>
 
-        <!-- Relocated Progress Button -->
+        <!-- Bottom Buttons -->
         <div
-          style="padding: 24px 32px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; background: rgba(0,0,0,0.3);">
-          <div style="display: flex; gap: 8px;">
-            <button id="showProgressBtn" class="floating-progress-btn" style="flex: 1;">📊 Progres</button>
-            <button id="showAchievementBtn" class="floating-progress-btn" style="flex: 1;">🏆 Pencapaian</button>
-          </div>
+          style="padding: 16px 32px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; background: rgba(0,0,0,0.3);">
+          <button id="showAchievementBtn" class="floating-progress-btn" style="width: 100%;">🏆 Pencapaian</button>
         </div>
       </div>
 
@@ -284,41 +264,70 @@
       </div>
     </div>
 
-    <!-- Progress / High Scores Modal -->
-    <div id="progressModal" class="menu-panel glassmorphism hidden">
-      <div class="modal-content glassmorphism" onclick="event.stopPropagation()">
-        <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">Papan <span class="accent">Progres</span></h2>
-
-        <div class="leaderboard-header">
-          <span class="col-kategori">Kategori</span>
-          <span class="col-skor">Waktu Bertahan</span>
-          <span class="col-aksi">Aksi</span>
-        </div>
-
-        <div id="progressList" class="progress-list">
-          <!-- Dynamically populated by renderProgressList -->
-        </div>
-
-        <div
-          style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-          <button id="resetAllProgressBtn" class="danger-btn">🔥 Hapus Semua Data</button>
-          <button id="closeProgressBtn" class="secondary-btn">Tutup Papan</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Achievement Modal -->
     <div id="achievementModal" class="menu-panel glassmorphism hidden">
-      <div class="modal-content glassmorphism" onclick="event.stopPropagation()">
+      <div class="modal-content glassmorphism" onclick="event.stopPropagation()" style="max-width: 700px;">
         <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">🏆 <span class="accent">Pencapaian</span></h2>
         <div id="achievementContent" class="achievement-list">
           <!-- Dynamically populated by renderAchievementModal -->
         </div>
         <div
-          style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-          <button id="resetAllAchievementsBtn" class="danger-btn">🔥 Hapus
-            Semua</button>
+          style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
           <button id="closeAchievementBtn" class="secondary-btn">Tutup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="menu-panel glassmorphism hidden">
+      <div class="modal-content glassmorphism" onclick="event.stopPropagation()" style="max-width: 420px;">
+        <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">⚙️ <span class="accent">Pengaturan</span></h2>
+        <div class="settings-list">
+          <!-- Bot AI -->
+          <div class="settings-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="settings-label">🤖 Tonton Bot AI Bermain</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togBot">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div id="botLevelContainer" class="bot-level-container hidden-content"
+              style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+              <label
+                style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; width: 100%;">Tingkat
+                AI: <span id="valBotLevel" class="val-badge bot-badge" style="padding: 2px 6px; font-size: 0.7rem;">1 -
+                  Noob</span></label>
+              <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1">
+            </div>
+          </div>
+          <!-- Sound -->
+          <div class="settings-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="settings-label">🔊 Efek Suara</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togSound" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-item" id="volumeContainer">
+            <label class="settings-label" style="display: flex; justify-content: space-between; width: 100%;">🔉 Volume
+              <span id="valVolume" class="val-badge">80%</span></label>
+            <input type="range" id="rngVolume" min="0" max="100" step="5" value="80">
+          </div>
+          <!-- Danger Zone -->
+          <div class="settings-item settings-danger-zone">
+            <span class="settings-label" style="color: var(--accent-red);">⚠️ Zona Bahaya</span>
+            <button id="resetAllDataBtn" class="danger-btn" style="width: 100%; margin-top: 8px;">🔥 Hapus Semua
+              Data</button>
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 6px;">Menghapus semua progres,
+              pencapaian, dan high score.</p>
+          </div>
+        </div>
+        <div
+          style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+          <button id="closeSettingsBtn" class="secondary-btn">Tutup</button>
         </div>
       </div>
     </div>

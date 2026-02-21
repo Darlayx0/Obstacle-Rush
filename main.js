@@ -1,6 +1,76 @@
 // Obstacle Rush Main Game Logic
 console.log("Obstacle Rush initialized.");
 
+// ==================== SOUND MANAGER ====================
+class SoundManager {
+    constructor() {
+        this.ctx = null;
+        this.enabled = localStorage.getItem('orSoundEnabled') !== 'false';
+        this.volume = parseFloat(localStorage.getItem('orSoundVolume')) || 0.8;
+    }
+    init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    play(type) {
+        if (!this.enabled || !this.ctx) return;
+        try { this.ctx.resume(); } catch (e) { }
+        const t = this.ctx.currentTime;
+        const g = this.ctx.createGain();
+        g.gain.value = this.volume * 0.3;
+        g.connect(this.ctx.destination);
+        if (type === 'click') {
+            const o = this.ctx.createOscillator();
+            o.type = 'sine'; o.frequency.setValueAtTime(800, t);
+            o.frequency.exponentialRampToValueAtTime(600, t + 0.06);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+            o.connect(g); o.start(t); o.stop(t + 0.08);
+        } else if (type === 'start') {
+            [400, 500, 700].forEach((f, i) => {
+                const o = this.ctx.createOscillator();
+                o.type = 'sine'; o.frequency.value = f;
+                const sg = this.ctx.createGain();
+                sg.gain.setValueAtTime(0, t + i * 0.08);
+                sg.gain.linearRampToValueAtTime(this.volume * 0.2, t + i * 0.08 + 0.03);
+                sg.gain.exponentialRampToValueAtTime(0.001, t + i * 0.08 + 0.12);
+                o.connect(sg); sg.connect(this.ctx.destination);
+                o.start(t + i * 0.08); o.stop(t + i * 0.08 + 0.12);
+            });
+        } else if (type === 'gameOver') {
+            const o = this.ctx.createOscillator();
+            o.type = 'sawtooth'; o.frequency.setValueAtTime(300, t);
+            o.frequency.exponentialRampToValueAtTime(80, t + 0.4);
+            g.gain.setValueAtTime(this.volume * 0.15, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+            o.connect(g); o.start(t); o.stop(t + 0.5);
+        } else if (type === 'newRecord') {
+            [523, 659, 784, 1047].forEach((f, i) => {
+                const o = this.ctx.createOscillator();
+                o.type = 'sine'; o.frequency.value = f;
+                const sg = this.ctx.createGain();
+                sg.gain.setValueAtTime(0, t + i * 0.1);
+                sg.gain.linearRampToValueAtTime(this.volume * 0.25, t + i * 0.1 + 0.03);
+                sg.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.2);
+                o.connect(sg); sg.connect(this.ctx.destination);
+                o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.2);
+            });
+        } else if (type === 'target') {
+            const o = this.ctx.createOscillator();
+            o.type = 'sine'; o.frequency.setValueAtTime(880, t);
+            o.frequency.exponentialRampToValueAtTime(1200, t + 0.08);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+            o.connect(g); o.start(t); o.stop(t + 0.12);
+        } else if (type === 'pause') {
+            const o = this.ctx.createOscillator();
+            o.type = 'triangle'; o.frequency.value = 500;
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+            o.connect(g); o.start(t); o.stop(t + 0.1);
+        }
+    }
+    setEnabled(v) { this.enabled = v; localStorage.setItem('orSoundEnabled', v); }
+    setVolume(v) { this.volume = v; localStorage.setItem('orSoundVolume', v); }
+}
+const sfx = new SoundManager();
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -519,24 +589,7 @@ function init() {
     document.getElementById('resumeBtn').addEventListener('click', togglePause);
     document.getElementById('pauseMenuBtn').addEventListener('click', showMainMenu);
 
-    document.getElementById('showProgressBtn').addEventListener('click', () => {
-        renderProgressList();
-        document.getElementById('progressModal').classList.remove('hidden');
-        document.getElementById('mainMenu').style.display = 'none';
-    });
-    document.getElementById('closeProgressBtn').addEventListener('click', () => {
-        document.getElementById('progressModal').classList.add('hidden');
-        document.getElementById('mainMenu').style.display = 'flex';
-    });
-    document.getElementById('resetAllProgressBtn').addEventListener('click', () => {
-        if (!confirm('Apakah Anda yakin ingin menghapus SEMUA data skor? Tindakan ini tidak dapat dibatalkan.')) return;
-        for (const key of Object.keys(MODES)) {
-            localStorage.removeItem(`obstacleRushHigh_${key}`);
-            localStorage.removeItem(`obstacleRushHighTarget_${key}`);
-        }
-        renderProgressList();
-        loadHighScore();
-    });
+    // (Progress modal removed)
 
     // Achievement modal
     document.getElementById('showAchievementBtn').addEventListener('click', () => {
@@ -614,19 +667,12 @@ function init() {
     });
     togBot.addEventListener('change', (e) => {
         isBotPlaying = e.target.checked;
-        const botContainer = document.querySelector('.bot-controller');
         if (e.target.checked) {
             botLevelContainer.classList.remove('hidden-content');
-            botContainer.classList.remove('bot-collapsed');
             document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
-            botContainer.style.background = 'rgba(0,0,0,0.4)';
-            botContainer.style.borderColor = 'rgba(6, 182, 212, 0.3)';
         } else {
             botLevelContainer.classList.add('hidden-content');
-            botContainer.classList.add('bot-collapsed');
             document.getElementById('startBtn').innerHTML = 'MAIN SEKARANG <span class="arrow">→</span>';
-            botContainer.style.background = 'rgba(0,0,0,0.1)';
-            botContainer.style.borderColor = 'rgba(255,255,255,0.05)';
         }
     });
 
@@ -667,6 +713,55 @@ function init() {
     if (rngBlackoutRadius) syncVal(rngBlackoutRadius, valBlackoutRadius, 'px');
     if (rngChainsawAmp) syncVal(rngChainsawAmp, valChainsawAmp, 'px');
 
+    // Settings modal
+    const settingsModal = document.getElementById('settingsModal');
+    const togSound = document.getElementById('togSound');
+    const rngVolume = document.getElementById('rngVolume');
+    const valVolume = document.getElementById('valVolume');
+    togSound.checked = sfx.enabled;
+    rngVolume.value = sfx.volume * 100;
+    valVolume.textContent = Math.round(sfx.volume * 100) + '%';
+
+    document.getElementById('showSettingsBtn').addEventListener('click', () => {
+        sfx.play('click');
+        settingsModal.classList.remove('hidden');
+    });
+    document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+        sfx.play('click');
+        settingsModal.classList.add('hidden');
+    });
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.classList.add('hidden');
+    });
+    togSound.addEventListener('change', (e) => {
+        sfx.setEnabled(e.target.checked);
+        if (e.target.checked) { sfx.init(); sfx.play('click'); }
+    });
+    rngVolume.addEventListener('input', (e) => {
+        const v = parseInt(e.target.value) / 100;
+        sfx.setVolume(v);
+        valVolume.textContent = e.target.value + '%';
+    });
+    document.getElementById('resetAllDataBtn').addEventListener('click', async () => {
+        sfx.play('click');
+        const ok = await gameConfirm(
+            '⚠️ Hapus Semua Data',
+            'Apakah Anda yakin ingin menghapus SEMUA data permainan? Ini termasuk high score, pencapaian, dan semua progres. Tindakan ini tidak dapat dibatalkan.',
+            'Ya, Hapus Semua'
+        );
+        if (!ok) return;
+        const keysToDelete = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('obstacleRush') || k.startsWith('orAch_'))) keysToDelete.push(k);
+        }
+        keysToDelete.forEach(k => localStorage.removeItem(k));
+        loadHighScore();
+        updateModeStatsPanel(currentMode);
+        settingsModal.classList.add('hidden');
+    });
+    document.getElementById('startBtn').addEventListener('click', () => sfx.play('click'));
+    document.getElementById('showAchievementBtn').addEventListener('click', () => sfx.play('click'));
 
     setMode('obstacle');
     showMainMenu();
@@ -932,6 +1027,8 @@ function updateLivesDisplay() {
 
 function startGame() {
     buildModConfig();
+    sfx.init();
+    sfx.play('start');
 
     isPlaying = true;
     isPaused = false;
@@ -1049,6 +1146,7 @@ function gameOver() {
     }
 
     updateGameOverProgress();
+    sfx.play('gameOver');
 
     hud.classList.add('hidden');
     gameOverMenu.classList.remove('hidden');
@@ -1120,44 +1218,7 @@ function loadHighScore() {
     highScoreNodes.forEach(node => node.textContent = formattedMsg);
 }
 
-function renderProgressList() {
-    const listContainer = document.getElementById('progressList');
-    listContainer.innerHTML = '';
-
-    for (const [key, mode] of Object.entries(MODES)) {
-        if (!mode.saveScore) continue;
-        const storeKey = `obstacleRushHigh_${key}`;
-        const high = parseFloat(localStorage.getItem(storeKey)) || 0;
-        const targetHigh = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${key}`)) || 0;
-
-        const item = document.createElement('div');
-        item.className = 'progress-item';
-
-        const scoreDisplay = formatTime(high) + (targetHigh > 0 ? ` | 🎯 ${Math.floor(targetHigh)}` : '');
-
-        item.innerHTML = `
-            <div class="mode-name">
-                <span class="mode-icon">${mode.icon}</span> ${mode.label}
-            </div>
-            <span class="score-val">${scoreDisplay}</span>
-            <div class="progress-actions">
-                <button class="delete-single-btn" data-mode="${key}" title="Hapus Skor">✕</button>
-            </div>
-        `;
-        listContainer.appendChild(item);
-    }
-
-    listContainer.querySelectorAll('.delete-single-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if (!confirm('Hapus skor untuk mode ini?')) return;
-            const m = e.target.dataset.mode;
-            localStorage.removeItem(`obstacleRushHigh_${m}`);
-            localStorage.removeItem(`obstacleRushHighTarget_${m}`);
-            renderProgressList(); // Refresh modal
-            if (currentMode === m) loadHighScore(); // Sync active view UI
-        });
-    });
-}
+// renderProgressList removed — progress page deleted
 
 // ==================== ACHIEVEMENT SYSTEM ====================
 // Time: 1% per 3 seconds => 100% = 300s
@@ -1253,23 +1314,7 @@ function gameConfirm(title, message, yesLabel = 'Ya, Hapus') {
     });
 }
 
-async function resetAllAchievements() {
-    const confirmed = await gameConfirm(
-        '⚠️ Hapus Semua Pencapaian',
-        'Apakah Anda yakin ingin menghapus SEMUA pencapaian? Tindakan ini tidak dapat dibatalkan.',
-        'Ya, Hapus Semua'
-    );
-    if (!confirmed) return;
-    for (const [key, mode] of Object.entries(MODES)) {
-        if (!mode.saveScore) continue;
-        localStorage.removeItem(getAchStoreKey(key, 'time'));
-        localStorage.removeItem(getAchStoreKey(key, 'target'));
-    }
-    renderAchievementModal();
-}
-
-// Bind reset button via addEventListener (module scope fix)
-document.getElementById('resetAllAchievementsBtn')?.addEventListener('click', resetAllAchievements);
+// resetAllAchievements removed — delete button moved to Settings page
 
 function updateGameOverProgress() {
     const el = document.getElementById('gameOverAchProgress');
@@ -1302,7 +1347,7 @@ function renderAchievementModal() {
 
     const overall = getOverallAchStats();
 
-    // Overall 3D card
+    // Overall card (full width)
     const overallDiv = document.createElement('div');
     overallDiv.className = 'ach-overall ach-3d-card';
     overallDiv.innerHTML = `
@@ -1330,10 +1375,15 @@ function renderAchievementModal() {
     `;
     content.appendChild(overallDiv);
 
-    // Per-mode 3D cards
+    // 2-column grid for per-mode cards
+    const grid = document.createElement('div');
+    grid.className = 'ach-mode-grid';
+
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
         const stats = getModeAchStats(key);
+        const highTime = parseFloat(localStorage.getItem(`obstacleRushHigh_${key}`)) || 0;
+        const highTarget = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${key}`)) || 0;
 
         const section = document.createElement('div');
         section.className = 'ach-mode-section ach-3d-card';
@@ -1343,6 +1393,17 @@ function renderAchievementModal() {
                     <span class="ach-mode-icon">${mode.icon}</span>
                     <span class="ach-mode-name">${mode.label}</span>
                     <span class="ach-mode-pct">${stats.combinedPct}%</span>
+                </div>
+                <div class="ach-highscores">
+                    <div class="ach-hs-item">
+                        <span class="ach-hs-icon">⏱️</span>
+                        <span class="ach-hs-val ach-hs-cyan">${highTime > 0 ? formatTime(highTime) : '—'}</span>
+                    </div>
+                    <div class="ach-hs-divider"></div>
+                    <div class="ach-hs-item">
+                        <span class="ach-hs-icon">🎯</span>
+                        <span class="ach-hs-val ach-hs-gold">${highTarget > 0 ? Math.floor(highTarget) : '—'}</span>
+                    </div>
                 </div>
                 <div class="ach-dual-bars">
                     <div class="ach-dual-row">
@@ -1356,14 +1417,11 @@ function renderAchievementModal() {
                         <span class="ach-dual-val">${stats.targetPct}%</span>
                     </div>
                 </div>
-                <div class="ach-mode-detail">
-                    <span>⏱️ ${formatTime(stats.bestTime)} / 300s</span>
-                    <span>🎯 ${Math.floor(stats.bestTarget)} / 50</span>
-                </div>
             </div>
         `;
-        content.appendChild(section);
+        grid.appendChild(section);
     }
+    content.appendChild(grid);
 
     modal.classList.remove('hidden');
 }
