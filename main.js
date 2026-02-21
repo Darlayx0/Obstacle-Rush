@@ -64,6 +64,10 @@ const chkShotgun = document.getElementById('chkShotgun');
 const chkWave = document.getElementById('chkWave');
 const chkSniper = document.getElementById('chkSniper');
 
+const togMirror = document.getElementById('togMirror');
+const togMirrorPlayer = document.getElementById('togMirrorPlayer');
+const togDisguise = document.getElementById('togDisguise');
+
 const togBot = document.getElementById('togBot');
 const botLevelContainer = document.getElementById('botLevelContainer');
 const rngBotLevel = document.getElementById('rngBotLevel');
@@ -111,13 +115,13 @@ const MODES = {
     chaos: { category: 'Klasik', label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 1.0, proSpawn: 0, speed: 150, track: 0, obsGrowth: 0.95, lasGrowth: 0.95, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     sluggish: { category: 'Tantangan', label: 'Sluggish', icon: '🐌', desc: 'Rintangan bergerak sangat lambat namun kemunculan sangat beruntun, perlahan akan menutupi seluruh layar.', lives: 1, obsSpawn: 0.25, lasSpawn: 0, proSpawn: 0, speed: 25, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     lightning: { category: 'Tantangan', label: 'Lightning', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 0.7, lasSpawn: 0, proSpawn: 0, speed: 1200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    stalker: { category: 'Tantangan', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.6, lasSpawn: 0, proSpawn: 0, speed: 140, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    mirror: { category: 'Tantangan', label: 'Mirror', icon: '🪞', desc: 'Setiap rintangan yang muncul memiliki duplikat simetris dari sisi berlawanan layar. Jumlah rintangan 2x lipat!', lives: 1, obsSpawn: 0.6, lasSpawn: 0, proSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    mirrorPlayer: { category: 'Tantangan', label: 'Mirror Player', icon: '🎭', desc: '2 objek player bergerak di layar — satu mengikuti kursor, satu bergerak terbalik. Keduanya harus dijaga agar selamat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 120, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 130, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, blackoutRadius: 160, chainsawAmp: 400, saveScore: true },
-    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 110, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    stalker: { category: 'Tantangan', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    mirror: { category: 'Tantangan', label: 'Mirror', icon: '🪞', desc: 'Setiap rintangan yang muncul memiliki duplikat simetris dari sisi berlawanan layar. Jumlah rintangan 2x lipat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    mirrorPlayer: { category: 'Tantangan', label: 'Mirror Player', icon: '🎭', desc: '2 objek player bergerak di layar — satu mengikuti kursor, satu bergerak terbalik. Keduanya harus dijaga agar selamat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, blackoutRadius: 160, chainsawAmp: 400, saveScore: true },
+    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    disguise: { category: 'Eksperimental', label: 'Disguise', icon: '🔴', desc: 'Player terlihat identik dengan rintangan — merah, tanpa glow, ukuran sama. Bisakah Anda melacak diri sendiri di antara kerumunan?', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 100, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    disguise: { category: 'Eksperimental', label: 'Disguise', icon: '🔴', desc: 'Player terlihat identik dengan rintangan — merah, tanpa glow, ukuran sama. Bisakah Anda melacak diri sendiri di antara kerumunan?', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     custom: { category: 'Kustom', label: 'Custom', icon: '🛠️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
@@ -162,7 +166,7 @@ class Player {
         }
 
         // Disguise mode: draw as red circle (identical to obstacle)
-        if (currentMode === 'disguise') {
+        if (currentMode === 'disguise' || (currentMode === 'custom' && modConfig.disguise)) {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = '#ef4444';
@@ -309,7 +313,7 @@ class Projectile {
 class Obstacle {
     constructor() {
         // Disguise mode: fixed radius = PLAYER_RADIUS
-        this.radius = (currentMode === 'disguise') ? PLAYER_RADIUS : SIZES[Math.floor(Math.random() * SIZES.length)];
+        this.radius = (currentMode === 'disguise' || (currentMode === 'custom' && modConfig.disguise)) ? PLAYER_RADIUS : SIZES[Math.floor(Math.random() * SIZES.length)];
         const edge = Math.floor(Math.random() * 4);
 
         if (edge === 0) {
@@ -721,7 +725,10 @@ function buildModConfig() {
             chainsaw: togChainsaw.checked,
             blackout: togBlackout.checked,
             blackoutRadius: rngBlackoutRadius ? parseInt(rngBlackoutRadius.value) : 200,
-            chainsawAmp: rngChainsawAmp ? parseInt(rngChainsawAmp.value) : 400
+            chainsawAmp: rngChainsawAmp ? parseInt(rngChainsawAmp.value) : 400,
+            mirror: togMirror ? togMirror.checked : false,
+            mirrorPlayer: togMirrorPlayer ? togMirrorPlayer.checked : false,
+            disguise: togDisguise ? togDisguise.checked : false
         };
     } else {
         modConfig = MODES[currentMode];
@@ -798,7 +805,7 @@ function startGame() {
     proSpawnTimer = 0;
 
     // Initialize mirror player for mirrorPlayer mode
-    if (currentMode === 'mirrorPlayer') {
+    if (currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) {
         mirrorPlayer = { x: canvas.width / 2, y: canvas.height / 2, radius: PLAYER_RADIUS };
     } else {
         mirrorPlayer = null;
@@ -822,6 +829,8 @@ function startGame() {
 
     lastTime = performance.now();
 
+    canvas.style.cursor = 'none'; // Hide cursor during gameplay
+
     mainMenu.classList.add('hidden');
     gameOverMenu.classList.add('hidden');
     pauseMenu.classList.add('hidden');
@@ -837,6 +846,7 @@ function gameOver() {
     isPlaying = false;
     cancelAnimationFrame(animationId);
     uiLayer.style.pointerEvents = 'auto';
+    canvas.style.cursor = 'default'; // Show cursor again
 
     if (currentMode !== 'custom') {
         saveHighScore();
@@ -852,6 +862,7 @@ function showMainMenu() {
     isPlaying = false;
     isPaused = false;
     cancelAnimationFrame(animationId);
+    canvas.style.cursor = 'default'; // Show cursor again
 
     mainMenu.classList.remove('hidden');
     gameOverMenu.classList.add('hidden');
@@ -1014,7 +1025,7 @@ function gameLoop(currentTime) {
             entities.push(obs);
 
             // Mirror mode: spawn symmetric duplicate
-            if (currentMode === 'mirror') {
+            if (currentMode === 'mirror' || (currentMode === 'custom' && modConfig.mirror)) {
                 const mirrorObs = new Obstacle();
                 mirrorObs.x = canvas.width - obs.x;
                 mirrorObs.y = canvas.height - obs.y;
@@ -1053,7 +1064,7 @@ function gameLoop(currentTime) {
     }
 
     // Mirror Player mode: update & draw mirror player
-    if (currentMode === 'mirrorPlayer' && mirrorPlayer) {
+    if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer) {
         mirrorPlayer.x = canvas.width - player.x;
         mirrorPlayer.y = canvas.height - player.y;
     }
@@ -1061,7 +1072,7 @@ function gameLoop(currentTime) {
     player.draw(ctx);
 
     // Draw mirror player (amber color)
-    if (currentMode === 'mirrorPlayer' && mirrorPlayer) {
+    if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer) {
         ctx.beginPath();
         ctx.arc(mirrorPlayer.x, mirrorPlayer.y, mirrorPlayer.radius, 0, Math.PI * 2);
         ctx.fillStyle = '#fbbf24';
@@ -1085,7 +1096,7 @@ function gameLoop(currentTime) {
         }
 
         // Mirror Player collision check
-        if (currentMode === 'mirrorPlayer' && mirrorPlayer && !entity.dead) {
+        if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer && !entity.dead) {
             if (checkCollision(mirrorPlayer, entity)) {
                 takeDamage(entity);
             }
@@ -1121,110 +1132,107 @@ function updateBot(dt) {
     let forceX = 0;
     let forceY = 0;
 
-    // Attractive force to center of screen (keeps bot alive and away from borders)
+    // Soft pull towards center (keeps bot from drifting to edges)
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const distCenterSq = Math.pow(centerX - player.x, 2) + Math.pow(centerY - player.y, 2);
+    const distCenter = Math.sqrt(Math.pow(centerX - player.x, 2) + Math.pow(centerY - player.y, 2)) || 1;
+    forceX += ((centerX - player.x) / distCenter) * 80;
+    forceY += ((centerY - player.y) / distCenter) * 80;
 
-    // Slight pull towards center
-    const pullBase = 200;
-    const cwX = (centerX - player.x) / (Math.sqrt(distCenterSq) || 1);
-    const cwY = (centerY - player.y) / (Math.sqrt(distCenterSq) || 1);
-    forceX += cwX * pullBase;
-    forceY += cwY * pullBase;
+    // Wall repulsion (strong exponential push away from edges AND corners)
+    const margin = 80;
+    const wallPush = 1500;
+    const cornerPush = 3000;
+    const leftDist = Math.max(1, player.x);
+    const rightDist = Math.max(1, canvas.width - player.x);
+    const topDist = Math.max(1, player.y);
+    const bottomDist = Math.max(1, canvas.height - player.y);
 
-    // Absolute Wall / Boundary Repulsion (Exponential 1/dist^3 keeps bot actively out of corners)
-    const margin = 120;
-    const wallPushPower = 2000;
-    let leftDist = player.x;
-    let rightDist = canvas.width - player.x;
-    let topDist = player.y;
-    let bottomDist = canvas.height - player.y;
+    if (leftDist < margin) forceX += Math.pow(margin / leftDist, 2) * wallPush;
+    if (rightDist < margin) forceX -= Math.pow(margin / rightDist, 2) * wallPush;
+    if (topDist < margin) forceY += Math.pow(margin / topDist, 2) * wallPush;
+    if (bottomDist < margin) forceY -= Math.pow(margin / bottomDist, 2) * wallPush;
 
-    if (leftDist < margin) forceX += Math.pow(margin / (leftDist || 1), 3) * wallPushPower;
-    if (rightDist < margin) forceX -= Math.pow(margin / (rightDist || 1), 3) * wallPushPower;
-    if (topDist < margin) forceY += Math.pow(margin / (topDist || 1), 3) * wallPushPower;
-    if (bottomDist < margin) forceY -= Math.pow(margin / (bottomDist || 1), 3) * wallPushPower;
+    // Extra corner avoidance — diagonal push if in corner zone
+    const cornerMargin = 150;
+    if (leftDist < cornerMargin && topDist < cornerMargin) {
+        forceX += cornerPush; forceY += cornerPush;
+    }
+    if (rightDist < cornerMargin && topDist < cornerMargin) {
+        forceX -= cornerPush; forceY += cornerPush;
+    }
+    if (leftDist < cornerMargin && bottomDist < cornerMargin) {
+        forceX += cornerPush; forceY -= cornerPush;
+    }
+    if (rightDist < cornerMargin && bottomDist < cornerMargin) {
+        forceX -= cornerPush; forceY -= cornerPush;
+    }
 
-    // Repulsive forces from entities
+    // Threat avoidance — Obstacles AND Projectiles
     let nearbyThreats = 0;
     entities.forEach(entity => {
-        if (entity instanceof Obstacle) {
-            // Predictive Evasion: Calculate future position of obstacle based on velocity
-            const lookAheadTime = 0.5 * levelSpec.reactFast; // higher levels look further ahead
-            const predX = entity.x + entity.vx * lookAheadTime;
-            const predY = entity.y + entity.vy * lookAheadTime;
-
+        if (entity instanceof Obstacle || entity instanceof Projectile) {
+            // Predictive evasion: look ahead based on velocity
+            const lookAhead = 0.4 * levelSpec.reactFast;
+            const predX = entity.x + (entity.vx || 0) * lookAhead;
+            const predY = entity.y + (entity.vy || 0) * lookAhead;
             const dx = player.x - predX;
             const dy = player.y - predY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-            if (dist < levelSpec.scanRadius) {
+            // Braver: smaller effective scan radius (bot allows closer proximity)
+            const effectiveRadius = levelSpec.scanRadius * 0.7;
+            if (dist < effectiveRadius) {
                 nearbyThreats++;
-                // The closer it is, the stronger the push
-                const pushPow = Math.pow(levelSpec.scanRadius / (dist || 1), 3);
-                forceX += (dx / dist) * pushPow * 800; // slightly toned down individual obstacle push
-                forceY += (dy / dist) * pushPow * 800;
+                // Quadratic push instead of cubic (less overreaction)
+                const pushPow = Math.pow(effectiveRadius / dist, 2);
+                const pushStr = (entity instanceof Projectile) ? 600 : 400;
+                forceX += (dx / dist) * pushPow * pushStr;
+                forceY += (dy / dist) * pushPow * pushStr;
             }
         } else if (entity instanceof Laser && entity.phase === 'warning') {
-            // Flee perpendicular to laser line
             const dist = pointLineDistance(player.x, player.y, entity.x1, entity.y1, entity.x2, entity.y2);
-            if (dist < levelSpec.scanRadius * 1.5) { // Lasers are very dangerous, look further
+            if (dist < levelSpec.scanRadius * 1.5) {
                 nearbyThreats++;
-                const dx = entity.x2 - entity.x1;
-                const dy = entity.y2 - entity.y1;
-                const len = Math.sqrt(dx * dx + dy * dy);
-
-                // Perpendicular normal vectors
-                const nx1 = -dy / len;
-                const ny1 = dx / len;
-                const nx2 = dy / len;
-                const ny2 = -dx / len;
-
-                // Choose normal that points away from center of laser
+                const ldx = entity.x2 - entity.x1;
+                const ldy = entity.y2 - entity.y1;
+                const len = Math.sqrt(ldx * ldx + ldy * ldy) || 1;
+                const nx1 = -ldy / len;
+                const ny1 = ldx / len;
+                const nx2 = ldy / len;
+                const ny2 = -ldx / len;
                 const midX = (entity.x1 + entity.x2) / 2;
                 const midY = (entity.y1 + entity.y2) / 2;
                 const pDx = player.x - midX;
                 const pDy = player.y - midY;
-
                 let ex, ey;
-                if (nx1 * pDx + ny1 * pDy > 0) {
-                    ex = nx1; ey = ny1;
-                } else {
-                    ex = nx2; ey = ny2;
-                }
-
+                if (nx1 * pDx + ny1 * pDy > 0) { ex = nx1; ey = ny1; }
+                else { ex = nx2; ey = ny2; }
                 const pushPow = Math.pow(levelSpec.scanRadius * 1.5 / (dist || 1), 2);
-                forceX += ex * pushPow * 1500;
-                forceY += ey * pushPow * 1500;
+                forceX += ex * pushPow * 1200;
+                forceY += ey * pushPow * 1200;
             }
         }
     });
 
-    // If there are many threats, the bot might get overwhelmed with vectors. 
-    // We add a tiny bit of "panic" randomness at lower levels, and clinical precision at higher levels.
-    if (nearbyThreats > 2) {
-        const panicScale = (6 - botLevel) * 100; // More panic at lower levels
+    // Slight panic randomness at low levels
+    if (nearbyThreats > 3) {
+        const panicScale = (6 - botLevel) * 60;
         forceX += (Math.random() - 0.5) * panicScale;
         forceY += (Math.random() - 0.5) * panicScale;
     }
 
-    // Normalize and scale by max speed
-    const maxSpeedBase = 800; // Pixels per second
+    // Normalize force and calculate target velocity
+    const maxSpeedBase = 900;
     const botSpeed = maxSpeedBase * levelSpec.speedBoost;
+    const forceMag = Math.sqrt(forceX * forceX + forceY * forceY) || 1;
+    const targetVx = (forceX / forceMag) * botSpeed;
+    const targetVy = (forceY / forceMag) * botSpeed;
 
-    const forceMag = Math.sqrt(forceX * forceX + forceY * forceY);
-    let targetVx = 0;
-    let targetVy = 0;
-    if (forceMag > 0) {
-        targetVx = (forceX / forceMag) * botSpeed;
-        targetVy = (forceY / forceMag) * botSpeed;
-    }
-
-    // Apply Flow Physics Momentum
-    const friction = 0.85; // Natural glide friction
-    botVx = botVx * friction + targetVx * (1 - friction) * levelSpec.reactFast;
-    botVy = botVy * friction + targetVy * (1 - friction) * levelSpec.reactFast;
+    // Smooth acceleration with lerp (not stiff, agile movement)
+    const smoothing = 0.12 * levelSpec.reactFast; // Higher levels react faster
+    botVx += (targetVx - botVx) * smoothing;
+    botVy += (targetVy - botVy) * smoothing;
 
     mouse.x = player.x + botVx * dt;
     mouse.y = player.y + botVy * dt;
