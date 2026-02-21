@@ -1117,96 +1117,196 @@ button:active,
   flex-shrink: 0;
 }
 
-/* ==================== ACHIEVEMENTS ==================== */
+/* ==================== ACHIEVEMENTS (3D Premium) ==================== */
 .achievement-list {
   max-height: 60vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  perspective: 800px;
 }
 
-.ach-overall {
+/* 3D Card base */
+.ach-3d-card {
+  border-radius: 14px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.ach-3d-card:hover {
+  transform: translateY(-2px) rotateX(1deg);
+  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.12);
+}
+
+.ach-3d-inner {
   padding: 16px;
-  background: rgba(250, 204, 21, 0.08);
+}
+
+/* Overall card */
+.ach-overall {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
   border: 1px solid rgba(250, 204, 21, 0.2);
-  border-radius: 12px;
-  margin-bottom: 8px;
 }
 
 .ach-overall-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ach-trophy {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.4));
+  animation: trophyFloat 3s ease-in-out infinite;
+}
+
+@keyframes trophyFloat {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-4px) rotate(3deg);
+  }
+}
+
+.ach-overall-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .ach-overall-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #facc15;
+  color: var(--text-main);
 }
 
-.ach-overall-stat {
-  font-size: 0.9rem;
+.ach-overall-pct {
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #06b6d4, #facc15);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Dual progress bars */
+.ach-dual-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ach-dual-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ach-dual-label {
+  font-size: 0.75rem;
   color: var(--text-muted);
-  font-weight: 600;
+  min-width: 60px;
+  white-space: nowrap;
+}
+
+.ach-dual-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 32px;
+  text-align: right;
 }
 
 .ach-bar-bg {
   width: 100%;
   height: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 4px;
   overflow: hidden;
+  flex: 1;
 }
 
 .ach-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #06b6d4, #facc15);
   border-radius: 4px;
-  transition: width 0.5s ease;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.ach-bar-time {
+  background: linear-gradient(90deg, #06b6d4, #22d3ee);
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+}
+
+.ach-bar-target {
+  background: linear-gradient(90deg, #f59e0b, #facc15);
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.3);
+}
+
+/* Mode section cards */
 .ach-mode-section {
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .ach-mode-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ach-mode-icon {
+  font-size: 1.2rem;
+}
+
+.ach-mode-name {
+  font-size: 0.9rem;
   font-weight: 600;
+  color: var(--text-main);
+  flex: 1;
 }
 
-.ach-mode-stat {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.ach-milestones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.ach-milestone {
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-muted);
-}
-
-.ach-milestone.done {
-  background: rgba(6, 182, 212, 0.1);
-  border-color: rgba(6, 182, 212, 0.25);
+.ach-mode-pct {
+  font-size: 0.85rem;
+  font-weight: 700;
   color: #06b6d4;
+}
+
+.ach-mode-detail {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Game Over progress */
+.go-ach-container {
+  margin: 16px 0;
+  width: 100%;
+}
+
+.go-ach-row {
+  display: flex;
+  gap: 12px;
+}
+
+.go-ach-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.go-ach-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }

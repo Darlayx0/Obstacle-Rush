@@ -124,7 +124,6 @@ const MODES = {
     chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     disguise: { category: 'Eksperimental', label: 'Disguise', icon: '🔴', desc: 'Player terlihat identik dengan rintangan — merah, tanpa glow, ukuran sama. Bisakah Anda melacak diri sendiri di antara kerumunan?', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    targetHunt: { category: 'Tantangan', label: 'Target Hunt', icon: '🎯', desc: 'Kumpulkan target berwarna emas yang muncul secara acak! Hindari rintangan sambil memburu skor tertinggi.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true, scoreType: 'target', targetSpawn: 2.0, targetDelay: 10 },
     custom: { category: 'Kustom', label: 'Custom', icon: '🛠️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
 
@@ -918,7 +917,7 @@ function gameOver() {
     isPlaying = false;
     cancelAnimationFrame(animationId);
     uiLayer.style.pointerEvents = 'auto';
-    canvas.style.cursor = 'default'; // Show cursor again
+    canvas.style.cursor = 'default';
 
     if (currentMode !== 'custom') {
         saveHighScore();
@@ -926,6 +925,7 @@ function gameOver() {
     }
 
     updateScoreDisplay();
+    updateGameOverProgress();
 
     hud.classList.add('hidden');
     gameOverMenu.classList.remove('hidden');
@@ -953,17 +953,13 @@ function formatTime(seconds) {
     return seconds.toFixed(2).replace('.', ',') + 's';
 }
 
-function isTargetMode() {
-    return modConfig.scoreType === 'target';
-}
-
 function updateScoreDisplay() {
-    if (isTargetMode()) {
-        const msg = `🎯 ${targetScore}`;
+    const timeMsg = formatTime(timeSurvived);
+    if (targetHuntEnabled) {
+        const msg = `${timeMsg}  │  🎯 ${targetScore}`;
         scoreTextNodes.forEach(node => node.textContent = msg);
     } else {
-        const formattedMsg = formatTime(timeSurvived);
-        scoreTextNodes.forEach(node => node.textContent = formattedMsg);
+        scoreTextNodes.forEach(node => node.textContent = timeMsg);
     }
 }
 
@@ -1041,11 +1037,21 @@ function renderProgressList() {
 }
 
 // ==================== ACHIEVEMENT SYSTEM ====================
-const TIME_MILESTONES = [30, 60, 90, 120, 150];
-const TARGET_MILESTONES = [10, 20, 30, 40, 50];
+// Time: 1% per 3 seconds => 100% = 300s
+// Target: 2% per target => 100% = 50 targets
+const ACH_TIME_MAX = 300; // seconds for 100%
+const ACH_TARGET_MAX = 50; // targets for 100%
 
-function getAchievementKey(modeKey, type, milestone) {
-    return `obstacleRushAch_${modeKey}_${type}_${milestone}`;
+function getTimePercent(seconds) {
+    return Math.min(100, Math.round((seconds / ACH_TIME_MAX) * 100));
+}
+
+function getTargetPercent(targets) {
+    return Math.min(100, Math.round((targets / ACH_TARGET_MAX) * 100));
+}
+
+function getAchStoreKey(modeKey, type) {
+    return `obstacleRushAchProg_${modeKey}_${type}`;
 }
 
 function checkAchievements() {
@@ -1053,55 +1059,75 @@ function checkAchievements() {
     const mode = MODES[currentMode];
     if (!mode || !mode.saveScore) return;
 
-    // Time milestones (always)
-    TIME_MILESTONES.forEach(m => {
-        if (timeSurvived >= m) {
-            localStorage.setItem(getAchievementKey(currentMode, 'time', m), '1');
-        }
-    });
+    // Save best time progress
+    const timeKey = getAchStoreKey(currentMode, 'time');
+    const prevTime = parseFloat(localStorage.getItem(timeKey)) || 0;
+    if (timeSurvived > prevTime) {
+        localStorage.setItem(timeKey, timeSurvived.toString());
+    }
 
-    // Target milestones (if target hunt was active)
+    // Save best target progress
     if (targetHuntEnabled) {
-        TARGET_MILESTONES.forEach(m => {
-            if (targetScore >= m) {
-                localStorage.setItem(getAchievementKey(currentMode, 'target', m), '1');
-            }
-        });
+        const targetKey = getAchStoreKey(currentMode, 'target');
+        const prevTarget = parseFloat(localStorage.getItem(targetKey)) || 0;
+        if (targetScore > prevTarget) {
+            localStorage.setItem(targetKey, targetScore.toString());
+        }
     }
 }
 
-function getAchievementStats(modeKey) {
-    let completed = 0;
-    const total = TIME_MILESTONES.length + TARGET_MILESTONES.length;
-    TIME_MILESTONES.forEach(m => {
-        if (localStorage.getItem(getAchievementKey(modeKey, 'time', m))) completed++;
-    });
-    TARGET_MILESTONES.forEach(m => {
-        if (localStorage.getItem(getAchievementKey(modeKey, 'target', m))) completed++;
-    });
-    return { completed, total, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
+function getModeAchStats(modeKey) {
+    const bestTime = parseFloat(localStorage.getItem(getAchStoreKey(modeKey, 'time'))) || 0;
+    const bestTarget = parseFloat(localStorage.getItem(getAchStoreKey(modeKey, 'target'))) || 0;
+    const timePct = getTimePercent(bestTime);
+    const targetPct = getTargetPercent(bestTarget);
+    const combinedPct = Math.round((timePct + targetPct) / 2);
+    return { bestTime, bestTarget, timePct, targetPct, combinedPct };
 }
 
-function getOverallAchievementStats() {
-    let completed = 0;
-    let total = 0;
+function getOverallAchStats() {
+    let totalTimePct = 0;
+    let totalTargetPct = 0;
+    let modeCount = 0;
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
-        const stats = getAchievementStats(key);
-        completed += stats.completed;
-        total += stats.total;
+        const stats = getModeAchStats(key);
+        totalTimePct += stats.timePct;
+        totalTargetPct += stats.targetPct;
+        modeCount++;
     }
-    return { completed, total, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
+    const avgTime = modeCount > 0 ? Math.round(totalTimePct / modeCount) : 0;
+    const avgTarget = modeCount > 0 ? Math.round(totalTargetPct / modeCount) : 0;
+    const avgCombined = Math.round((avgTime + avgTarget) / 2);
+    return { avgTime, avgTarget, avgCombined, modeCount };
 }
 
 function resetAllAchievements() {
     if (!confirm('Apakah Anda yakin ingin menghapus SEMUA pencapaian? Tindakan ini tidak dapat dibatalkan.')) return;
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
-        TIME_MILESTONES.forEach(m => localStorage.removeItem(getAchievementKey(key, 'time', m)));
-        TARGET_MILESTONES.forEach(m => localStorage.removeItem(getAchievementKey(key, 'target', m)));
+        localStorage.removeItem(getAchStoreKey(key, 'time'));
+        localStorage.removeItem(getAchStoreKey(key, 'target'));
     }
     renderAchievementModal();
+}
+
+function updateGameOverProgress() {
+    const el = document.getElementById('gameOverAchProgress');
+    if (!el || currentMode === 'custom') { if (el) el.innerHTML = ''; return; }
+    const stats = getModeAchStats(currentMode);
+    el.innerHTML = `
+        <div class="go-ach-row">
+            <div class="go-ach-item">
+                <span class="go-ach-label">⏱️ Waktu ${stats.timePct}%</span>
+                <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
+            </div>
+            <div class="go-ach-item">
+                <span class="go-ach-label">🎯 Target ${stats.targetPct}%</span>
+                <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
+            </div>
+        </div>
+    `;
 }
 
 function renderAchievementModal() {
@@ -1110,41 +1136,66 @@ function renderAchievementModal() {
     if (!content) return;
     content.innerHTML = '';
 
-    // Overall stats
-    const overall = getOverallAchievementStats();
+    const overall = getOverallAchStats();
+
+    // Overall 3D card
     const overallDiv = document.createElement('div');
-    overallDiv.className = 'ach-overall';
+    overallDiv.className = 'ach-overall ach-3d-card';
     overallDiv.innerHTML = `
-        <div class="ach-overall-header">
-            <span class="ach-overall-title">🏆 Keseluruhan</span>
-            <span class="ach-overall-stat">${overall.completed}/${overall.total} (${overall.percent}%)</span>
+        <div class="ach-3d-inner">
+            <div class="ach-overall-header">
+                <span class="ach-trophy">🏆</span>
+                <div class="ach-overall-info">
+                    <span class="ach-overall-title">Keseluruhan Game</span>
+                    <span class="ach-overall-pct">${overall.avgCombined}%</span>
+                </div>
+            </div>
+            <div class="ach-dual-bars">
+                <div class="ach-dual-row">
+                    <span class="ach-dual-label">⏱️ Waktu</span>
+                    <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${overall.avgTime}%"></div></div>
+                    <span class="ach-dual-val">${overall.avgTime}%</span>
+                </div>
+                <div class="ach-dual-row">
+                    <span class="ach-dual-label">🎯 Target</span>
+                    <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${overall.avgTarget}%"></div></div>
+                    <span class="ach-dual-val">${overall.avgTarget}%</span>
+                </div>
+            </div>
         </div>
-        <div class="ach-bar-bg"><div class="ach-bar-fill" style="width: ${overall.percent}%"></div></div>
     `;
     content.appendChild(overallDiv);
 
-    // Per-mode sections
+    // Per-mode 3D cards
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
-        const stats = getAchievementStats(key);
+        const stats = getModeAchStats(key);
 
         const section = document.createElement('div');
-        section.className = 'ach-mode-section';
+        section.className = 'ach-mode-section ach-3d-card';
         section.innerHTML = `
-            <div class="ach-mode-header">
-                <span>${mode.icon} ${mode.label}</span>
-                <span class="ach-mode-stat">${stats.completed}/${stats.total} (${stats.percent}%)</span>
-            </div>
-            <div class="ach-bar-bg"><div class="ach-bar-fill" style="width: ${stats.percent}%"></div></div>
-            <div class="ach-milestones">
-                ${TIME_MILESTONES.map(m => {
-            const done = !!localStorage.getItem(getAchievementKey(key, 'time', m));
-            return `<span class="ach-milestone ${done ? 'done' : ''}">${done ? '✅' : '⬜'} ⏱️ ${m}s</span>`;
-        }).join('')}
-                ${TARGET_MILESTONES.map(m => {
-            const done = !!localStorage.getItem(getAchievementKey(key, 'target', m));
-            return `<span class="ach-milestone ${done ? 'done' : ''}">${done ? '✅' : '⬜'} 🎯 ${m}</span>`;
-        }).join('')}
+            <div class="ach-3d-inner">
+                <div class="ach-mode-header">
+                    <span class="ach-mode-icon">${mode.icon}</span>
+                    <span class="ach-mode-name">${mode.label}</span>
+                    <span class="ach-mode-pct">${stats.combinedPct}%</span>
+                </div>
+                <div class="ach-dual-bars">
+                    <div class="ach-dual-row">
+                        <span class="ach-dual-label">⏱️</span>
+                        <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
+                        <span class="ach-dual-val">${stats.timePct}%</span>
+                    </div>
+                    <div class="ach-dual-row">
+                        <span class="ach-dual-label">🎯</span>
+                        <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
+                        <span class="ach-dual-val">${stats.targetPct}%</span>
+                    </div>
+                </div>
+                <div class="ach-mode-detail">
+                    <span>⏱️ ${formatTime(stats.bestTime)} / 300s</span>
+                    <span>🎯 ${Math.floor(stats.bestTarget)} / 50</span>
+                </div>
             </div>
         `;
         content.appendChild(section);
@@ -1152,8 +1203,6 @@ function renderAchievementModal() {
 
     modal.classList.remove('hidden');
 }
-
-
 function pointLineDistance(px, py, x1, y1, x2, y2) {
     const A = px - x1;
     const B = py - y1;
