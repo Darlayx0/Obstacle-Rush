@@ -633,7 +633,21 @@ function init() {
     rngBotLevel.addEventListener('input', (e) => {
         botLevel = parseInt(e.target.value);
         valBotLevel.textContent = BOT_LEVELS[botLevel - 1].label;
+        updateBotSliderColor(e.target);
     });
+
+    function updateBotSliderColor(slider) {
+        const val = parseInt(slider.value);
+        const max = parseInt(slider.max);
+        const pct = (val - 1) / (max - 1);
+        // Blue → Orange → Red gradient
+        const r = Math.round(0 + pct * 255);
+        const g = Math.round(212 - pct * 140);
+        const b = Math.round(255 - pct * 255);
+        const color = `rgb(${r}, ${g}, ${b})`;
+        slider.style.setProperty('--slider-color', color);
+        slider.style.background = `linear-gradient(90deg, rgba(0,212,255,0.3) 0%, rgba(${r},${g},${b},0.4) ${pct * 100}%, rgba(255,255,255,0.06) ${pct * 100}%)`;
+    }
 
     // Listen to custom ranges
     const syncVal = (el, valNode, suffix = '') => {
@@ -704,10 +718,48 @@ function setMode(modeKey) {
     if (isCustom) {
         customPanel.classList.remove('hidden');
         highScoreContainer.classList.add('hidden'); // no high scores in custom mode
+        const perfEl = document.getElementById('perfPreview');
+        if (perfEl) perfEl.style.display = 'none';
     } else {
         customPanel.classList.add('hidden');
         highScoreContainer.classList.remove('hidden');
         loadHighScore();
+        updatePerfPreview(modeKey);
+    }
+}
+
+function updatePerfPreview(modeKey) {
+    const perfBars = document.getElementById('perfBars');
+    const perfBestLabel = document.getElementById('perfBestLabel');
+    const perfEl = document.getElementById('perfPreview');
+    if (!perfBars || !perfEl) return;
+    perfEl.style.display = '';
+
+    const key = `obstacleRushHigh_${modeKey}`;
+    const best = parseFloat(localStorage.getItem(key)) || 0;
+    const targetKey = `obstacleRushHighTarget_${modeKey}`;
+    const bestTarget = parseFloat(localStorage.getItem(targetKey)) || 0;
+
+    if (perfBestLabel) {
+        perfBestLabel.textContent = best > 0 ? `Terbaik: ${formatTime(best)}` : '—';
+    }
+
+    // Generate 8 visual bars based on best score distribution
+    perfBars.innerHTML = '';
+    const barCount = 8;
+    for (let i = 0; i < barCount; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'perf-bar';
+        // Create a varied but proportional pattern
+        const variation = best > 0 ? (0.3 + Math.random() * 0.7) : 0.1;
+        const height = best > 0 ? Math.max(8, variation * 100) : 4;
+        bar.style.height = height + '%';
+        // Last bar = actual best (tallest)
+        if (i === barCount - 1 && best > 0) {
+            bar.style.height = '100%';
+            bar.style.background = 'linear-gradient(180deg, rgba(0, 212, 255, 0.7), rgba(99, 102, 241, 0.3))';
+        }
+        perfBars.appendChild(bar);
     }
 }
 
