@@ -40,7 +40,10 @@
         <div class="menu-header">
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <h1 class="title">OBSTACLE<br><span class="accent">RUSH</span></h1>
-            <button id="showSettingsBtn" class="icon-btn settings-icon" title="Pengaturan">⚙️</button>
+            <div style="display: flex; gap: 6px;">
+              <button id="showAchievementBtn" class="icon-btn settings-icon" title="Pencapaian">🏆</button>
+              <button id="showSettingsBtn" class="icon-btn settings-icon" title="Pengaturan">⚙️</button>
+            </div>
           </div>
           <p class="subtitle">Pilih Mode Bermain</p>
         </div>
@@ -59,11 +62,6 @@
           <!-- Dynamically populated by JS -->
         </div>
 
-        <!-- Bottom Buttons -->
-        <div
-          style="padding: 16px 32px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; background: rgba(0,0,0,0.3);">
-          <button id="showAchievementBtn" class="floating-progress-btn" style="width: 100%;">🏆 Pencapaian</button>
-        </div>
       </div>
 
       <div class="menu-right">
@@ -74,7 +72,9 @@
           <div id="modeStats" class="mode-stats">
             <!-- Dynamically populated stats -->
           </div>
-          <!-- modeStatsPanel removed -->
+          <div id="modeAchPanel" class="mode-ach-panel">
+            <!-- Populated by JS: achievement progress bars -->
+          </div>
         </div>
 
         <div id="customPanel" class="custom-panel hidden">

@@ -188,11 +188,11 @@ const MODES = {
     sluggish: { category: 'Tantangan', label: 'Sluggish', icon: '🐌', desc: 'Rintangan bergerak sangat lambat namun kemunculan sangat beruntun, perlahan akan menutupi seluruh layar.', lives: 1, obsSpawn: 0.25, lasSpawn: 0, proSpawn: 0, speed: 25, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     lightning: { category: 'Tantangan', label: 'Lightning', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 0.7, lasSpawn: 0, proSpawn: 0, speed: 1200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     stalker: { category: 'Tantangan', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    mirror: { category: 'Tantangan', label: 'Mirror', icon: '🪞', desc: 'Setiap rintangan yang muncul memiliki duplikat simetris dari sisi berlawanan layar. Jumlah rintangan 2x lipat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    mirrorPlayer: { category: 'Tantangan', label: 'Mirror Player', icon: '🎭', desc: '2 objek player bergerak di layar — satu mengikuti kursor, satu bergerak terbalik. Keduanya harus dijaga agar selamat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    mirror: { category: 'Eksperimental', label: 'Mirror', icon: '🪞', desc: 'Setiap rintangan yang muncul memiliki duplikat simetris dari sisi berlawanan layar. Jumlah rintangan 2x lipat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    mirrorPlayer: { category: 'Eksperimental', label: 'Mirror Player', icon: '🎭', desc: '2 objek player bergerak di layar — satu mengikuti kursor, satu bergerak terbalik. Keduanya harus dijaga agar selamat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, blackoutRadius: 160, chainsawAmp: 400, saveScore: true },
-    chainsaw: { category: 'Eksperimental', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    proyektil: { category: 'Eksperimental', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    chainsaw: { category: 'Tantangan', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    proyektil: { category: 'Klasik', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     disguise: { category: 'Eksperimental', label: 'Disguise', icon: '🔴', desc: 'Player terlihat identik dengan rintangan — merah, tanpa glow, ukuran sama. Bisakah Anda melacak diri sendiri di antara kerumunan?', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     custom: { category: 'Kustom', label: 'Custom', icon: '🛠️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
@@ -587,29 +587,46 @@ class Target {
 
     draw(ctx) {
         if (this.collected) return;
-        const pulse = 1 + Math.sin(this.pulsePhase) * 0.25;
+        const pulse = 1 + Math.sin(this.pulsePhase) * 0.2;
         const r = this.radius * pulse;
+        const t = this.pulsePhase;
 
-        // Outer glow
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, r + 6, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(250, 204, 21, 0.15)';
-        ctx.fill();
+        ctx.save();
+        // Outer rotating ring
+        ctx.translate(this.x, this.y);
+        ctx.rotate(t * 0.5);
+        ctx.beginPath(); ctx.arc(0, 0, r + 8, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(250, 204, 21, 0.15)'; ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-        // Main circle
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = '#facc15';
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#facc15';
-        ctx.fill();
+        // Outer glow halo
+        ctx.beginPath(); ctx.arc(this.x, this.y, r + 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.1)'; ctx.fill();
 
-        // Inner dot
+        // Main gradient body
+        const g = ctx.createRadialGradient(this.x - r * 0.25, this.y - r * 0.25, 0, this.x, this.y, r);
+        g.addColorStop(0, '#fef9c3'); g.addColorStop(0.4, '#facc15'); g.addColorStop(1, '#a16207');
+        ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.shadowBlur = 22; ctx.shadowColor = 'rgba(250, 204, 21, 0.7)';
+        ctx.fill(); ctx.shadowBlur = 0;
+
+        // Inner diamond shape
+        const ir = r * 0.4;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, r * 0.4, 0, Math.PI * 2);
-        ctx.fillStyle = '#fef08a';
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.moveTo(this.x, this.y - ir);
+        ctx.lineTo(this.x + ir, this.y);
+        ctx.lineTo(this.x, this.y + ir);
+        ctx.lineTo(this.x - ir, this.y);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'; ctx.fill();
+
+        // Specular
+        ctx.beginPath();
+        ctx.arc(this.x - r * 0.2, this.y - r * 0.25, r * 0.15, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.fill();
+        ctx.restore();
     }
 
     isDead() {
@@ -689,6 +706,11 @@ function init() {
             catHeader.className = 'mode-category';
             catHeader.textContent = currentCat;
             modeList.appendChild(catHeader);
+            // Create grid container for this category's cards
+            const grid = document.createElement('div');
+            grid.className = 'mode-cat-grid';
+            grid.dataset.cat = currentCat;
+            modeList.appendChild(grid);
         }
 
         const card = document.createElement('div');
@@ -696,7 +718,9 @@ function init() {
         card.dataset.mode = key;
         card.innerHTML = `<span class="mode-name">${mode.label}</span><span class="mode-icon">${mode.icon}</span>`;
         card.addEventListener('click', () => setMode(key));
-        modeList.appendChild(card);
+        // Append to the last grid container
+        const grids = modeList.querySelectorAll('.mode-cat-grid');
+        grids[grids.length - 1].appendChild(card);
     }
 
     presetSelect.addEventListener('change', (e) => {
@@ -821,7 +845,7 @@ function init() {
         keysToDelete.forEach(k => localStorage.removeItem(k));
         loadHighScore();
         updateModeStatsPanel(currentMode);
-        settingsModal.classList.add('hidden');
+        // Stay on settings page (don't close modal)
     });
     document.getElementById('startBtn').addEventListener('click', () => sfx.play('click'));
     document.getElementById('showAchievementBtn').addEventListener('click', () => sfx.play('click'));
@@ -887,7 +911,30 @@ function setMode(modeKey) {
 }
 
 function updateModeStatsPanel(modeKey) {
-    // Panel removed from UI
+    const panel = document.getElementById('modeAchPanel');
+    if (!panel) return;
+    if (modeKey === 'custom') { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const stats = getModeAchStats(modeKey);
+    panel.innerHTML = `
+        <div class="msp-title">🏆 Pencapaian</div>
+        <div class="msp-progress">
+            <div class="msp-bar-row">
+                <span class="msp-bar-label">⏱️ Waktu</span>
+                <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
+                <span class="msp-bar-pct">${stats.timePct}% <span style="opacity:0.5;font-size:0.65rem">/ 300s</span></span>
+            </div>
+            <div class="msp-bar-row">
+                <span class="msp-bar-label">🎯 Target</span>
+                <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
+                <span class="msp-bar-pct">${stats.targetPct}% <span style="opacity:0.5;font-size:0.65rem">/ 50</span></span>
+            </div>
+        </div>
+        <div class="msp-overall">
+            <span>Keseluruhan</span>
+            <span class="msp-overall-pct">${stats.combinedPct}%</span>
+        </div>
+    `;
 }
 
 function applyPreset(presetMode) {
@@ -1023,9 +1070,15 @@ function togglePause() {
 function takeDamage(entity) {
     playerLives--;
     updateLivesDisplay();
-
-    // Mark entity as dead instantly so it doesn't drain another life on the next frame
     if (entity) entity.dead = true;
+
+    // Screen flash + shake effect
+    const cv = document.getElementById('gameCanvas');
+    cv.style.filter = 'brightness(3) saturate(0)';
+    cv.style.transform = 'translate(4px, -3px)';
+    setTimeout(() => { cv.style.filter = ''; cv.style.transform = 'translate(-3px, 2px)'; }, 50);
+    setTimeout(() => { cv.style.filter = ''; cv.style.transform = ''; }, 120);
+    sfx.play('gameOver');
 
     if (playerLives <= 0) {
         gameOver();
@@ -1613,6 +1666,27 @@ function gameLoop(currentTime) {
             if (dist < (player.radius + entity.radius)) {
                 entity.collected = true;
                 targetScore++;
+                sfx.play('target');
+                // Particle burst effect
+                for (let p = 0; p < 12; p++) {
+                    const angle = (Math.PI * 2 / 12) * p;
+                    const speed = 60 + Math.random() * 80;
+                    const px = entity.x, py = entity.y;
+                    const pvx = Math.cos(angle) * speed, pvy = Math.sin(angle) * speed;
+                    const pLife = 0.3 + Math.random() * 0.2;
+                    let pTime = 0;
+                    const pId = requestAnimationFrame(function drawP(ts) {
+                        pTime += 0.016;
+                        if (pTime > pLife) return;
+                        const x = px + pvx * pTime, y = py + pvy * pTime;
+                        const alpha = 1 - pTime / pLife;
+                        ctx.beginPath(); ctx.arc(x, y, 3 * alpha, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(250, 204, 21, ${alpha})`;
+                        ctx.shadowBlur = 8; ctx.shadowColor = '#facc15';
+                        ctx.fill(); ctx.shadowBlur = 0;
+                        requestAnimationFrame(drawP);
+                    });
+                }
             }
         } else if (checkCollision(player, entity)) {
             takeDamage(entity);
