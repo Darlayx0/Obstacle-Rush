@@ -901,6 +901,8 @@ function setMode(modeKey) {
     if (isCustom) {
         customPanel.classList.remove('hidden');
         highScoreContainer.classList.add('hidden'); // no high scores in custom mode
+        const pAch = document.getElementById('modeAchPanel');
+        if (pAch) pAch.style.display = 'none';
         const perfEl = document.getElementById('perfPreview');
         if (perfEl) perfEl.style.display = 'none';
     } else {
@@ -1845,3 +1847,19 @@ function updateBot(dt) {
 }
 
 init();
+
+function initSliders() {
+    const sliders = document.querySelectorAll('input[type="range"]');
+    function updateSlider(slider) {
+        const min = parseFloat(slider.min) || 0;
+        const max = parseFloat(slider.max) || 100;
+        const val = parseFloat(slider.value) || 0;
+        const pct = ((val - min) / (max - min)) * 100;
+        slider.style.setProperty('--slider-pct', `${pct}%`);
+    }
+    sliders.forEach(slider => {
+        updateSlider(slider);
+        slider.addEventListener('input', () => updateSlider(slider));
+    });
+}
+initSliders();
