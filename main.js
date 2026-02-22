@@ -233,35 +233,48 @@ class Player {
 
     draw(ctx) {
         if (isInvulnerable) {
-            if (Math.floor(invulnerableTimer * 10) % 2 === 0) {
-                return;
-            }
+            if (Math.floor(invulnerableTimer * 10) % 2 === 0) return;
         }
 
-        // Disguise mode: draw as red circle (identical to obstacle)
+        // Disguise mode: draw as obstacle-like
         if (currentMode === 'disguise' || (currentMode === 'custom' && modConfig.disguise)) {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = '#ef4444';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#ef4444';
-            ctx.fill();
-            ctx.shadowBlur = 0;
+            ctx.save();
+            const dg = ctx.createRadialGradient(this.x - this.radius * 0.3, this.y - this.radius * 0.3, 0, this.x, this.y, this.radius);
+            dg.addColorStop(0, '#ff8a8a'); dg.addColorStop(0.5, '#ef4444'); dg.addColorStop(1, '#991b1b');
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = dg; ctx.shadowBlur = 12; ctx.shadowColor = '#ef4444'; ctx.fill();
+            ctx.shadowBlur = 0; ctx.restore();
             return;
         }
 
+        ctx.save();
+        // Outer halo
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#f8fafc';
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#06b6d4';
-        ctx.fill();
+        ctx.arc(this.x, this.y, this.radius + 6, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
+        // Main body gradient
+        const pg = ctx.createRadialGradient(this.x - this.radius * 0.3, this.y - this.radius * 0.3, 0, this.x, this.y, this.radius);
+        pg.addColorStop(0, '#ffffff'); pg.addColorStop(0.4, '#e0f2fe'); pg.addColorStop(1, '#0891b2');
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = pg;
+        ctx.shadowBlur = 20; ctx.shadowColor = 'rgba(6, 182, 212, 0.7)';
+        ctx.fill(); ctx.shadowBlur = 0;
+
+        // Inner core
+        const ig = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 0.5);
+        ig.addColorStop(0, '#22d3ee'); ig.addColorStop(1, 'rgba(6, 182, 212, 0.3)');
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = ig; ctx.fill();
+
+        // Specular highlight
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius * 0.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#06b6d4';
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.arc(this.x - this.radius * 0.25, this.y - this.radius * 0.3, this.radius * 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill();
+
+        ctx.restore();
     }
 }
 
@@ -360,20 +373,38 @@ class Projectile {
 
     draw(ctx) {
         if (this.dead) return;
-        const COLORS = {
-            bullet: '#f87171',  // Red
-            homing: '#fbbf24',  // Amber
-            shotgun: '#f87171', // Red (pellets)
-            wave: '#a78bfa',    // Purple
-            sniper: '#34d399'   // Green
+        ctx.save();
+        const STYLES = {
+            bullet: { c1: '#fca5a5', c2: '#ef4444', c3: '#7f1d1d', glow: 'rgba(239, 68, 68, 0.6)' },
+            homing: { c1: '#fde68a', c2: '#f59e0b', c3: '#78350f', glow: 'rgba(245, 158, 11, 0.6)' },
+            shotgun: { c1: '#fca5a5', c2: '#ef4444', c3: '#7f1d1d', glow: 'rgba(239, 68, 68, 0.5)' },
+            wave: { c1: '#ddd6fe', c2: '#a78bfa', c3: '#4c1d95', glow: 'rgba(167, 139, 250, 0.6)' },
+            sniper: { c1: '#a7f3d0', c2: '#34d399', c3: '#064e3b', glow: 'rgba(52, 211, 153, 0.6)' }
         };
+        const s = STYLES[this.type] || STYLES.bullet;
+
+        // Trail effect
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = COLORS[this.type] || '#f87171';
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = ctx.fillStyle;
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.arc(this.x - this.vx * 0.03, this.y - this.vy * 0.03, this.radius * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = s.glow.replace('0.6', '0.2'); ctx.fill();
+
+        // Outer glow ring
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = s.glow.replace('0.6', '0.25'); ctx.lineWidth = 1.5; ctx.stroke();
+
+        // Main gradient body
+        const g = ctx.createRadialGradient(this.x - this.radius * 0.25, this.y - this.radius * 0.25, 0, this.x, this.y, this.radius);
+        g.addColorStop(0, s.c1); g.addColorStop(0.5, s.c2); g.addColorStop(1, s.c3);
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.shadowBlur = 14; ctx.shadowColor = s.glow;
+        ctx.fill(); ctx.shadowBlur = 0;
+
+        // Specular dot
+        ctx.beginPath();
+        ctx.arc(this.x - this.radius * 0.2, this.y - this.radius * 0.2, this.radius * 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fill();
+
+        ctx.restore();
     }
 
     isDead() {
@@ -440,13 +471,27 @@ class Obstacle {
     }
 
     draw(ctx) {
+        ctx.save();
+        // Outer glow ring
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.25)'; ctx.lineWidth = 2; ctx.stroke();
+
+        // Main gradient fill
+        const og = ctx.createRadialGradient(this.x - this.radius * 0.3, this.y - this.radius * 0.3, 0, this.x, this.y, this.radius);
+        og.addColorStop(0, '#ff8a8a'); og.addColorStop(0.5, '#ef4444'); og.addColorStop(1, '#991b1b');
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = og; ctx.shadowBlur = 16; ctx.shadowColor = 'rgba(239, 68, 68, 0.5)';
+        ctx.fill(); ctx.shadowBlur = 0;
+
+        // Inner highlight
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#ef4444';
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#ef4444';
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.arc(this.x - this.radius * 0.25, this.y - this.radius * 0.25, this.radius * 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'; ctx.fill();
+
+        // Inner circuit ring
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.55, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.restore();
     }
 
     isDead() {
@@ -488,24 +533,37 @@ class Laser {
 
     draw(ctx) {
         if (this.phase === 'dead' || this.dead) return;
+        ctx.save();
 
         ctx.beginPath();
         ctx.moveTo(this.x1, this.y1);
         ctx.lineTo(this.x2, this.y2);
 
         if (this.phase === 'warning') {
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.3)';
-            ctx.lineWidth = 4;
-            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.25)';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 6]);
+            ctx.stroke();
+            ctx.setLineDash([]);
         } else if (this.phase === 'active') {
+            // Outer glow layer
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.15)';
+            ctx.lineWidth = 28; ctx.stroke();
+            // Mid glow layer
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.3)';
+            ctx.lineWidth = 16; ctx.stroke();
+            // Core beam
             ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 12;
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#ef4444';
+            ctx.lineWidth = 6;
+            ctx.shadowBlur = 20; ctx.shadowColor = '#ef4444';
+            ctx.stroke();
+            // White-hot center
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 2; ctx.shadowBlur = 0;
+            ctx.stroke();
         }
 
-        ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.restore();
     }
 
     isDead() {
@@ -725,13 +783,18 @@ function init() {
     document.getElementById('showSettingsBtn').addEventListener('click', () => {
         sfx.play('click');
         settingsModal.classList.remove('hidden');
+        document.getElementById('mainMenu').style.display = 'none';
     });
     document.getElementById('closeSettingsBtn').addEventListener('click', () => {
         sfx.play('click');
         settingsModal.classList.add('hidden');
+        document.getElementById('mainMenu').style.display = 'flex';
     });
     settingsModal.addEventListener('click', (e) => {
-        if (e.target === settingsModal) settingsModal.classList.add('hidden');
+        if (e.target === settingsModal) {
+            settingsModal.classList.add('hidden');
+            document.getElementById('mainMenu').style.display = 'flex';
+        }
     });
     togSound.addEventListener('change', (e) => {
         sfx.setEnabled(e.target.checked);
@@ -824,54 +887,7 @@ function setMode(modeKey) {
 }
 
 function updateModeStatsPanel(modeKey) {
-    const panel = document.getElementById('modeStatsPanel');
-    if (!panel) return;
-    if (modeKey === 'custom') { panel.style.display = 'none'; return; }
-    panel.style.display = '';
-
-    const key = `obstacleRushHigh_${modeKey}`;
-    const bestTime = parseFloat(localStorage.getItem(key)) || 0;
-    const targetKey = `obstacleRushHighTarget_${modeKey}`;
-    const bestTarget = parseFloat(localStorage.getItem(targetKey)) || 0;
-    const stats = getModeAchStats(modeKey);
-
-    panel.innerHTML = `
-        <div class="msp-section">
-            <div class="msp-title">🏆 Rekor Terbaik</div>
-            <div class="msp-scores">
-                <div class="msp-score-item">
-                    <span class="msp-score-icon">⏱️</span>
-                    <span class="msp-score-label">Waktu</span>
-                    <span class="msp-score-val msp-val-cyan">${bestTime > 0 ? formatTime(bestTime) : '—'}</span>
-                </div>
-                <div class="msp-divider"></div>
-                <div class="msp-score-item">
-                    <span class="msp-score-icon">🎯</span>
-                    <span class="msp-score-label">Target</span>
-                    <span class="msp-score-val msp-val-gold">${bestTarget > 0 ? Math.floor(bestTarget) : '—'}</span>
-                </div>
-            </div>
-        </div>
-        <div class="msp-section">
-            <div class="msp-title">📊 Pencapaian</div>
-            <div class="msp-progress">
-                <div class="msp-bar-row">
-                    <span class="msp-bar-label">⏱️ Waktu</span>
-                    <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
-                    <span class="msp-bar-pct">${stats.timePct}%</span>
-                </div>
-                <div class="msp-bar-row">
-                    <span class="msp-bar-label">🎯 Target</span>
-                    <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
-                    <span class="msp-bar-pct">${stats.targetPct}%</span>
-                </div>
-            </div>
-            <div class="msp-overall">
-                <span>Keseluruhan</span>
-                <span class="msp-overall-pct">${stats.combinedPct}%</span>
-            </div>
-        </div>
-    `;
+    // Panel removed from UI
 }
 
 function applyPreset(presetMode) {
