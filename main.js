@@ -861,7 +861,7 @@ function setMode(modeKey) {
     const isCustom = modeKey === 'custom';
 
     // Update active styles in the list
-    Array.from(modeList.children).forEach(card => {
+    modeList.querySelectorAll('.mode-card').forEach(card => {
         if (card.dataset.mode === modeKey) {
             card.classList.add('active');
         } else {
