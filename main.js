@@ -185,14 +185,14 @@ const MODES = {
     obstacle: { category: 'Klasik', label: 'Obstacles', icon: '🔴', desc: 'Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan; kecepatan mereka akan terus meningkat secara konstan seiring waktu.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     laser: { category: 'Klasik', label: 'Lasers', icon: '💥', desc: 'Sinar laser mematikan dari ujung ke ujung layar. Perhatikan peringatan transparan sebelum laser diaktifkan secara mendadak!', lives: 1, obsSpawn: 0, lasSpawn: 1.0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     chaos: { category: 'Klasik', label: 'Chaos', icon: '🔥', desc: 'Kekacauan mutlak. Baik obstacles maupun laser akan muncul secara bersamaan untuk menguji refleks ekstrem Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 1.0, proSpawn: 0, speed: 150, track: 0, obsGrowth: 0.95, lasGrowth: 0.95, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    proyektil: { category: 'Klasik', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     sluggish: { category: 'Tantangan', label: 'Sluggish', icon: '🐌', desc: 'Rintangan bergerak sangat lambat namun kemunculan sangat beruntun, perlahan akan menutupi seluruh layar.', lives: 1, obsSpawn: 0.25, lasSpawn: 0, proSpawn: 0, speed: 25, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     lightning: { category: 'Tantangan', label: 'Lightning', icon: '⚡', desc: 'Berkedip dan Anda akan mati. Obstacles bergerak dengan kecepatan luar biasa.', lives: 1, obsSpawn: 0.7, lasSpawn: 0, proSpawn: 0, speed: 1200, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     stalker: { category: 'Tantangan', label: 'Stalker', icon: '👁️', desc: 'Mereka mengawasi dan mengikuti Anda. Obstacles secara perlahan akan berbelok dan melacak pergerakan kursor Anda.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 1.5, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
+    chainsaw: { category: 'Tantangan', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     mirror: { category: 'Eksperimental', label: 'Mirror', icon: '🪞', desc: 'Setiap rintangan yang muncul memiliki duplikat simetris dari sisi berlawanan layar. Jumlah rintangan 2x lipat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     mirrorPlayer: { category: 'Eksperimental', label: 'Mirror Player', icon: '🎭', desc: '2 objek player bergerak di layar — satu mengikuti kursor, satu bergerak terbalik. Keduanya harus dijaga agar selamat!', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     blackout: { category: 'Eksperimental', label: 'Blackout', icon: '🔦', desc: 'Malam yang gelap gulita. Pemain hanya dibekali cahaya senter kecil untuk meraba rintangan merah yang mendekat diam-diam.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: true, chainsaw: false, blackoutRadius: 160, chainsawAmp: 400, saveScore: true },
-    chainsaw: { category: 'Tantangan', label: 'Chainsaw', icon: '⚙️', desc: 'Rintangan bergerak secara bergelombang dan memutar dalam lintasan sinusoidal yang sulit diprediksi ujung hitboxnya.', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: true, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
-    proyektil: { category: 'Klasik', label: 'Proyektil', icon: '📡', desc: '5 jenis peluru mematikan: Bullet, Homing, Shotgun, Wave, dan Sniper — masing-masing dengan gaya unik. Semakin lama, semakin sulit!', lives: 3, obsSpawn: 0, lasSpawn: 0, proSpawn: 0.6, speed: 220, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     disguise: { category: 'Eksperimental', label: 'Disguise', icon: '🔴', desc: 'Player terlihat identik dengan rintangan — merah, tanpa glow, ukuran sama. Bisakah Anda melacak diri sendiri di antara kerumunan?', lives: 1, obsSpawn: 0.5, lasSpawn: 0, proSpawn: 0, speed: 150, track: 0, obsGrowth: defaultGrowth, lasGrowth: defaultGrowth, lasWarn: 1.0, blackout: false, chainsaw: false, blackoutRadius: 200, chainsawAmp: 400, saveScore: true },
     custom: { category: 'Kustom', label: 'Custom', icon: '🛠️', desc: 'Atur engine fisika permainan secara manual menggunakan panel sistem. Skor tertinggi tidak akan disimpan pada mode ini.', saveScore: false }
 };
@@ -660,6 +660,7 @@ function init() {
 
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('restartBtn').addEventListener('click', startGame);
+    document.getElementById('pauseRestartBtn').addEventListener('click', startGame);
     document.getElementById('menuBtn').addEventListener('click', showMainMenu);
     document.getElementById('resumeBtn').addEventListener('click', togglePause);
     document.getElementById('pauseMenuBtn').addEventListener('click', showMainMenu);
@@ -1235,6 +1236,7 @@ function showMainMenu() {
 
     if (currentMode !== 'custom') {
         loadHighScore();
+        updateModeStatsPanel(currentMode);
     }
     drawBackground();
 }
@@ -1349,10 +1351,10 @@ function getOverallAchStats() {
         totalTargetPct += stats.targetPct;
         modeCount++;
     }
-    const avgTime = modeCount > 0 ? Math.round(totalTimePct / modeCount) : 0;
-    const avgTarget = modeCount > 0 ? Math.round(totalTargetPct / modeCount) : 0;
-    const avgCombined = Math.round((avgTime + avgTarget) / 2);
-    return { avgTime, avgTarget, avgCombined, modeCount };
+    const avgTime = modeCount > 0 ? (totalTimePct / modeCount) : 0;
+    const avgTarget = modeCount > 0 ? (totalTargetPct / modeCount) : 0;
+    const avgCombined = ((avgTime + avgTarget) / 2).toFixed(1);
+    return { avgTime: avgTime.toFixed(1), avgTarget: avgTarget.toFixed(1), avgCombined, modeCount };
 }
 
 function gameConfirm(title, message, yesLabel = 'Ya, Hapus') {
@@ -1416,6 +1418,9 @@ function renderAchievementModal() {
 
     const overall = getOverallAchStats();
 
+    const titles = ['Pemula', 'Amatir', 'Berbakat', 'Terampil', 'Veteran', 'Ahli', 'Master', 'Grandmaster', 'Legenda', 'Mitos'];
+    const titleIndex = Math.min(9, Math.floor(parseFloat(overall.avgCombined) / 10));
+
     // Overall card (full width)
     const overallDiv = document.createElement('div');
     overallDiv.className = 'ach-overall ach-3d-card';
@@ -1424,7 +1429,7 @@ function renderAchievementModal() {
             <div class="ach-overall-header">
                 <span class="ach-trophy">🏆</span>
                 <div class="ach-overall-info">
-                    <span class="ach-overall-title">Keseluruhan Game</span>
+                    <span class="ach-overall-title">Keseluruhan Game <span style="margin-left:8px; padding:3px 10px; background:rgba(34, 211, 238, 0.15); border:1px solid rgba(34, 211, 238, 0.3); border-radius:12px; font-size:0.75rem; color:#67e8f9; text-shadow:0 0 8px rgba(34, 211, 238,0.5);">🌟 ${titles[titleIndex]}</span></span>
                     <span class="ach-overall-pct">${overall.avgCombined}%</span>
                 </div>
             </div>
@@ -1432,19 +1437,19 @@ function renderAchievementModal() {
                 <div class="ach-dual-row">
                     <span class="ach-dual-label">⏱️ Waktu</span>
                     <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${overall.avgTime}%"></div></div>
-                    <span class="ach-dual-val">${overall.avgTime}%</span>
+                    <span class="ach-dual-val">${overall.avgTime}% <span style="opacity:0.5;font-size:0.65rem">/ 300s</span></span>
                 </div>
                 <div class="ach-dual-row">
                     <span class="ach-dual-label">🎯 Target</span>
                     <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${overall.avgTarget}%"></div></div>
-                    <span class="ach-dual-val">${overall.avgTarget}%</span>
+                    <span class="ach-dual-val">${overall.avgTarget}% <span style="opacity:0.5;font-size:0.65rem">/ 50</span></span>
                 </div>
             </div>
         </div>
     `;
     content.appendChild(overallDiv);
 
-    // 2-column grid for per-mode cards
+    // Grid for per-mode cards
     const grid = document.createElement('div');
     grid.className = 'ach-mode-grid';
 
@@ -1478,12 +1483,12 @@ function renderAchievementModal() {
                     <div class="ach-dual-row">
                         <span class="ach-dual-label">⏱️</span>
                         <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
-                        <span class="ach-dual-val">${stats.timePct}%</span>
+                        <span class="ach-dual-val">${stats.timePct}% <span style="opacity:0.5;font-size:0.65rem">/ 300s</span></span>
                     </div>
                     <div class="ach-dual-row">
                         <span class="ach-dual-label">🎯</span>
                         <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
-                        <span class="ach-dual-val">${stats.targetPct}%</span>
+                        <span class="ach-dual-val">${stats.targetPct}% <span style="opacity:0.5;font-size:0.65rem">/ 50</span></span>
                     </div>
                 </div>
             </div>

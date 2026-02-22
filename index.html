@@ -24,11 +24,11 @@
   <div id="uiLayer" class="ui-layer">
     <!-- HUD -->
     <div id="hud" class="hud hidden">
-      <div class="score-display">
+      <div class="hud-panel score-display text-glow">
         <span class="label">Time</span>
         <span id="scoreText" class="value">0,00s</span>
       </div>
-      <div class="lives-display">
+      <div class="hud-panel lives-display text-glow">
         <span class="label">Nyawa</span>
         <span id="livesText" class="value">❤️❤️❤️</span>
       </div>
@@ -71,9 +71,6 @@
             meningkat seiring waktu.</p>
           <div id="modeStats" class="mode-stats">
             <!-- Dynamically populated stats -->
-          </div>
-          <div id="modeAchPanel" class="mode-ach-panel">
-            <!-- Populated by JS: achievement progress bars -->
           </div>
         </div>
 
@@ -127,6 +124,20 @@
                 </div>
                 <div class="setting-group"
                   style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label>🪞 Mirror (Obstacle)</label>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="togMirror">
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label>🎭 Mirror Player</label>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="togMirrorPlayer">
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <label>⚙️ Ayunan Chainsaw</label>
                     <label class="toggle-switch">
@@ -214,27 +225,7 @@
               </div>
             </div>
 
-            <!-- Mirror Block -->
-            <div class="engine-block">
-              <div class="block-header">
-                <span class="block-title">🪞 Mirror (Obstacle)</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="togMirror">
-                  <span class="slider round"></span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Mirror Player Block -->
-            <div class="engine-block">
-              <div class="block-header">
-                <span class="block-title">🎭 Mirror Player</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="togMirrorPlayer">
-                  <span class="slider round"></span>
-                </label>
-              </div>
-            </div>
+            <!-- (Mirror configs moved to Obstacles block) -->
 
             <!-- Disguise Block -->
             <div class="engine-block">
@@ -248,6 +239,10 @@
             </div>
 
           </div>
+        </div>
+
+        <div id="modeAchPanel" class="mode-ach-panel">
+          <!-- Populated by JS: achievement progress bars -->
         </div>
 
         <div class="action-footer">
@@ -334,6 +329,7 @@
     <div id="pauseMenu" class="menu-panel glassmorphism hidden">
       <h1 class="title">GAME <span class="accent">PAUSED</span></h1>
       <button id="resumeBtn" class="primary-btn">LANJUTKAN</button>
+      <button id="pauseRestartBtn" class="secondary-btn">COBA LAGI</button>
       <button id="pauseMenuBtn" class="secondary-btn">MENU UTAMA</button>
     </div>
 
