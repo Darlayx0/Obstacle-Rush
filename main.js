@@ -1761,12 +1761,8 @@ function gameLoop(currentTime) {
                     particles.push(new Particle(entity.x, entity.y, color2));
                 }
 
-                if (hit()) {
-                    return; // Hit resulted in death, exit loop
-                } else {
-                    // Pre-emptively "kill" the entity that hit us so it doesn't double-hit
-                    entity.dead = true;
-                }
+                takeDamage(entity);
+                if (playerLives <= 0) return; // Exit loop if dead
             }
         }
 
