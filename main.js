@@ -199,6 +199,7 @@ const MODES = {
 
 // Entities arrays
 let entities = [];
+let particles = [];
 let obsSpawnTimer = 0;
 let lasSpawnTimer = 0;
 let proSpawnTimer = 0;
@@ -207,6 +208,47 @@ let targetSpawnTimer = 0;
 // Game Config
 const MOUSE_FOLLOW_SPEED = 0.2; // Lerp factor
 const PLAYER_RADIUS = 15;
+
+// ==================== PARTICLE SYSTEM ====================
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 100 + Math.random() * 300;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.life = 1.0;
+        this.decay = 0.5 + Math.random() * 1.5;
+        this.radius = 2 + Math.random() * 4;
+        this.friction = 0.95;
+        this.gravity = 50;
+    }
+
+    update(dt) {
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.vy += this.gravity * dt;
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.life -= this.decay * dt;
+    }
+
+    draw(ctx) {
+        if (this.life <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+    }
+}
+// ==========================================================
 
 // Obstacle Config
 const SIZES = [8, 12, 16, 24, 32];
@@ -1112,6 +1154,7 @@ function startGame() {
     timeSurvived = 0;
     targetScore = 0;
     entities = [];
+    particles = [];
     obsSpawnTimer = 0;
     lasSpawnTimer = 0;
     proSpawnTimer = 0;
