@@ -73,6 +73,8 @@ const sfx = new SoundManager();
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const animCanvas = document.getElementById('animCanvas');
+const animCtx = animCanvas.getContext('2d');
 
 // UI Elements
 const uiLayer = document.getElementById('uiLayer');
@@ -433,8 +435,8 @@ class Projectile {
             const perpX = -Math.sin(this.angle);
             const perpY = Math.cos(this.angle);
             const waveOffset = Math.sin(this.waveTimer * 6) * 120 * dt;
-            this.x += perpX * waveOffset;
-            this.y += perpY * waveOffset;
+            this.x += perpX * wave;
+            this.y += perpY * wave;
         }
     }
 
@@ -708,6 +710,8 @@ let mirrorPlayer = null; // Used in mirrorPlayer mode
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    animCanvas.width = window.innerWidth;
+    animCanvas.height = window.innerHeight;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
@@ -1108,13 +1112,82 @@ function buildModConfig() {
 }
 
 function drawBackground() {
-    // Cyberpunk trailing effect (don't clear entirely, leave trails)
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'rgba(10, 14, 30, 0.25)'; // Dark blue tint with low alpha for trails
+    // Preserve trails while keeping the background transparent using destination-in
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.70)'; // 30% fade per frame
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'source-over';
+}
 
-    // Draw animated grid
-    // Grid removed in favor of CSS dynamic background
+// Cinematic Background Variables
+let cinematicTime = 0;
+const dustParticles = [];
+for (let i = 0; i < 150; i++) {
+    dustParticles.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        size: Math.random() * 2.5 + 0.5,
+        speedX: Math.random() * 0.4 - 0.2,
+        speedY: Math.random() * -0.5 - 0.1, // Float upwards
+        phase: Math.random() * Math.PI * 2
+    });
+}
+
+function drawCinematicBackground(dt) {
+    if (!animCtx) return;
+    cinematicTime += dt * 0.5;
+
+    // Clear canvas entirely (background gradient handled by CSS body)
+    animCtx.clearRect(0, 0, animCanvas.width, animCanvas.height);
+
+    // 1. Draw Flowing Neon Waves
+    animCtx.globalCompositeOperation = 'lighter';
+    const lines = 12;
+    for (let i = 0; i < lines; i++) {
+        animCtx.beginPath();
+        let startY = animCanvas.height * 0.6 + (i * animCanvas.height * 0.05);
+
+        for (let x = 0; x <= animCanvas.width; x += 40) {
+            let y = startY
+                + Math.sin(x * 0.0015 + cinematicTime + i * 0.4) * 200
+                + Math.cos(x * 0.002 - cinematicTime * 0.6 + i * 0.8) * 150;
+
+            if (x === 0) animCtx.moveTo(x, y);
+            else animCtx.lineTo(x, y);
+        }
+
+        let r, g, b;
+        if (gameState === 'playing') {
+            r = 40; g = 100; b = 255;
+        } else {
+            r = 20; g = 180; b = 255;
+        }
+
+        let alpha = 0.05 + Math.sin(cinematicTime * 2 + i) * 0.03;
+        animCtx.lineWidth = i % 3 === 0 ? 3 : 1;
+        animCtx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        animCtx.stroke();
+    }
+
+    // 2. Draw Dust Particles
+    animCtx.globalCompositeOperation = 'source-over';
+    dustParticles.forEach(p => {
+        p.x += p.speedX * (gameState === 'playing' ? 2 : 1);
+        p.y += p.speedY * (gameState === 'playing' ? 2 : 1);
+        p.phase += dt;
+
+        if (p.x < 0) p.x = animCanvas.width;
+        if (p.x > animCanvas.width) p.x = 0;
+        if (p.y < 0) p.y = animCanvas.height;
+        if (p.y > animCanvas.height) p.y = 0;
+
+        let alpha = 0.2 + Math.sin(p.phase * 2) * 0.3;
+        if (alpha < 0) alpha = 0;
+        animCtx.fillStyle = `rgba(180, 220, 255, ${alpha})`;
+        animCtx.beginPath();
+        animCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        animCtx.fill();
+    });
 }
 
 function togglePause() {
@@ -1646,6 +1719,7 @@ function gameLoop(currentTime) {
         timeSurvived += safeDt;
     }
 
+    drawCinematicBackground(safeDt);
     drawBackground();
 
     // ================= MAIN MENU BACKGROUND ANIMATION =================
