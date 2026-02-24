@@ -759,7 +759,6 @@ function init() {
     presetSelect.innerHTML = '<option value="" disabled selected>-- Pilih Mode Dasar --</option>';
 
     // Build interactive mode UI hierarchically
-    modeList.innerHTML = '';
     let currentCat = '';
     for (const [key, mode] of Object.entries(MODES)) {
         if (key !== 'custom') {
@@ -768,29 +767,10 @@ function init() {
             opt.textContent = `${mode.icon} ${mode.label}`;
             presetSelect.appendChild(opt);
         }
-
-        if (mode.category !== currentCat) {
-            currentCat = mode.category;
-            const catHeader = document.createElement('div');
-            catHeader.className = 'mode-category';
-            catHeader.textContent = currentCat;
-            modeList.appendChild(catHeader);
-            // Create grid container for this category's cards
-            const grid = document.createElement('div');
-            grid.className = 'mode-cat-grid';
-            grid.dataset.cat = currentCat;
-            modeList.appendChild(grid);
-        }
-
-        const card = document.createElement('div');
-        card.className = 'mode-card';
-        card.dataset.mode = key;
-        card.innerHTML = `<span class="mode-name">${mode.label}</span><span class="mode-icon">${mode.icon}</span>`;
-        card.addEventListener('click', () => setMode(key));
-        // Append to the last grid container
-        const grids = modeList.querySelectorAll('.mode-cat-grid');
-        grids[grids.length - 1].appendChild(card);
     }
+
+    // Initial render of the left mode list panel
+    renderModeList('obstacle');
 
     presetSelect.addEventListener('change', (e) => {
         if (e.target.value) {
@@ -928,14 +908,8 @@ function setMode(modeKey) {
     currentMode = modeKey;
     const isCustom = modeKey === 'custom';
 
-    // Update active styles in the list
-    modeList.querySelectorAll('.mode-card').forEach(card => {
-        if (card.dataset.mode === modeKey) {
-            card.classList.add('active');
-        } else {
-            card.classList.remove('active');
-        }
-    });
+    // Update active styles in the list by re-rendering
+    renderModeList(modeKey);
 
     const mode = MODES[modeKey];
     infoTitle.textContent = mode.label;
@@ -945,24 +919,32 @@ function setMode(modeKey) {
     modeStats.innerHTML = '';
     if (!isCustom) {
         if (mode.obsSpawn > 0) {
-            modeStats.innerHTML += `<div class="stat-pill">⏱️ Kemunculan: ${mode.obsSpawn.toFixed(2)}s</div>`;
-            modeStats.innerHTML += `<div class="stat-pill">💨 Kecepatan: ${mode.speed}</div>`;
+            modeStats.innerHTML += `<div class="px-5 py-2 rounded-full border border-primary/20 bg-primary/5 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-sm">timer</span>
+                <span class="text-sm font-display tracking-wider text-slate-300">OBSTACLE: <span class="text-primary font-bold">${mode.obsSpawn.toFixed(2)}s</span></span>
+            </div>`;
+            modeStats.innerHTML += `<div class="px-5 py-2 rounded-full border border-primary/20 bg-primary/5 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-sm">speed</span>
+                <span class="text-sm font-display tracking-wider text-slate-300">KECEPATAN: <span class="text-primary font-bold">${mode.speed}</span></span>
+            </div>`;
         }
         if (mode.lasSpawn > 0) {
-            modeStats.innerHTML += `<div class="stat-pill">💥 Laser: ${mode.lasSpawn.toFixed(1)}s</div>`;
+            modeStats.innerHTML += `<div class="px-5 py-2 rounded-full border border-primary/20 bg-primary/5 flex items-center gap-3">
+                <span class="material-symbols-outlined text-orange-400 text-sm">flash_on</span>
+                <span class="text-sm font-display tracking-wider text-slate-300">LASER: <span class="text-orange-400 font-bold">${mode.lasSpawn.toFixed(1)}s</span></span>
+            </div>`;
         }
         if (mode.proSpawn > 0) {
-            modeStats.innerHTML += `<div class="stat-pill">📡 Proyektil: ${mode.proSpawn.toFixed(2)}s</div>`;
-            modeStats.innerHTML += `<div class="stat-pill">🚀 Kecepatan: ${mode.speed}</div>`;
+            modeStats.innerHTML += `<div class="px-5 py-2 rounded-full border border-primary/20 bg-primary/5 flex items-center gap-3">
+                <span class="material-symbols-outlined text-cyan-400 text-sm">satellite_alt</span>
+                <span class="text-sm font-display tracking-wider text-slate-300">PROYEKTIL: <span class="text-cyan-400 font-bold">${mode.proSpawn.toFixed(2)}s</span></span>
+            </div>`;
         }
         if (mode.track > 0) {
-            modeStats.innerHTML += `<div class="stat-pill">🎯 Pelacakan: ${mode.track}x</div>`;
-        }
-        if (mode.chainsaw) {
-            modeStats.innerHTML += `<div class="stat-pill">⚙️ Ayunan: ${mode.chainsawAmp}px</div>`;
-        }
-        if (mode.blackout) {
-            modeStats.innerHTML += `<div class="stat-pill">🔦 Area Senter: ${mode.blackoutRadius}px</div>`;
+            modeStats.innerHTML += `<div class="px-5 py-2 rounded-full border border-purple-500/20 bg-purple-500/5 flex items-center gap-3">
+                <span class="material-symbols-outlined text-purple-400 text-sm">my_location</span>
+                <span class="text-sm font-display tracking-wider text-slate-300">PELACAKAN: <span class="text-purple-400 font-bold">${mode.track}x</span></span>
+            </div>`;
         }
     }
 
@@ -971,8 +953,6 @@ function setMode(modeKey) {
         highScoreContainer.classList.add('hidden'); // no high scores in custom mode
         const pAch = document.getElementById('modeAchPanel');
         if (pAch) pAch.style.display = 'none';
-        const perfEl = document.getElementById('perfPreview');
-        if (perfEl) perfEl.style.display = 'none';
     } else {
         customPanel.classList.add('hidden');
         highScoreContainer.classList.remove('hidden');
@@ -987,23 +967,49 @@ function updateModeStatsPanel(modeKey) {
     if (modeKey === 'custom') { panel.style.display = 'none'; return; }
     panel.style.display = '';
     const stats = getModeAchStats(modeKey);
+
     panel.innerHTML = `
-        <div class="msp-title">🏆 Pencapaian</div>
-        <div class="msp-progress">
-            <div class="msp-bar-row">
-                <span class="msp-bar-label">⏱️ Waktu</span>
-                <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
-                <span class="msp-bar-pct">${stats.timePct}% <span style="opacity:0.5;font-size:0.65rem">/ 300s</span></span>
-            </div>
-            <div class="msp-bar-row">
-                <span class="msp-bar-label">🎯 Target</span>
-                <div class="ach-bar-bg msp-bar"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
-                <span class="msp-bar-pct">${stats.targetPct}% <span style="opacity:0.5;font-size:0.65rem">/ 50</span></span>
-            </div>
+        <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-yellow-500">emoji_events</span>
+            <h3 class="text-sm font-bold tracking-[0.2em] text-slate-400 uppercase">Status Pencapaian</h3>
         </div>
-        <div class="msp-overall">
-            <span>Keseluruhan</span>
-            <span class="msp-overall-pct">${stats.combinedPct}%</span>
+        <div class="flex flex-col md:flex-row items-center justify-around gap-8">
+            <div class="flex flex-col items-center gap-3 relative group">
+                <div class="relative w-24 h-24">
+                    <svg class="w-full h-full orbit-progress" viewBox="0 0 100 100">
+                        <circle class="text-slate-700 stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="6"></circle>
+                        <circle class="text-primary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" stroke-width="6" style="stroke-dashoffset: calc(251.2 - (251.2 * ${stats.timePct}) / 100);"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                        <span class="text-xl font-display font-bold text-white">${stats.timePct}%</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs font-display uppercase tracking-widest text-slate-500">Waktu</div>
+                    <div class="text-xs text-slate-400">Target: 300s</div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-center gap-3 relative group">
+                <div class="relative w-24 h-24">
+                    <svg class="w-full h-full orbit-progress" viewBox="0 0 100 100">
+                        <circle class="text-slate-700 stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="6"></circle>
+                        <circle class="text-red-500 stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" stroke-width="6" style="stroke-dashoffset: calc(251.2 - (251.2 * ${stats.targetPct}) / 100);"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                        <span class="text-xl font-display font-bold text-white">${stats.targetPct}%</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs font-display uppercase tracking-widest text-slate-500">Target</div>
+                    <div class="text-xs text-slate-400">Target: 50</div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-center justify-center p-4 bg-white/5 rounded-xl border border-white/5">
+                <span class="text-xs font-display uppercase tracking-widest text-slate-500 mb-1">Keseluruhan</span>
+                <span class="text-3xl font-display font-bold text-emerald-400 drop-shadow-md">${stats.combinedPct}%</span>
+            </div>
         </div>
     `;
 }
@@ -2026,3 +2032,75 @@ function initSliders() {
     });
 }
 initSliders();
+
+function renderModeList(activeKey) {
+    let html = '';
+
+    // Group modes by category
+    const categories = {
+        'Klasik': [],
+        'Tantangan': [],
+        'Eksperimental': [],
+        'Kustomasi': []
+    };
+
+    for (const [key, mode] of Object.entries(MODES)) {
+        if (!categories[mode.category]) {
+            categories[mode.category] = [];
+        }
+        categories[mode.category].push({ key, ...mode });
+    }
+
+    // Render each category block
+    for (const [catName, modes] of Object.entries(categories)) {
+        if (modes.length === 0) continue;
+
+        let gridCols = catName === 'Tantangan' ? 'grid-cols-2' : 'grid-cols-1';
+
+        html += `<div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">${catName}</h3>
+            <div class="grid ${gridCols} gap-3">`;
+
+        modes.forEach(mode => {
+            const isActive = mode.key === activeKey;
+            let btnClass = isActive
+                ? "mode-card glass-card active-mode p-4 rounded-xl flex items-center justify-between group w-full text-left relative overflow-hidden"
+                : "mode-card glass-card p-4 rounded-xl flex items-center justify-between group w-full text-left hover:scale-[1.02] opacity-80 hover:opacity-100";
+
+            // For 'Tantangan' small square buttons
+            if (catName === 'Tantangan') {
+                btnClass = isActive
+                    ? "mode-card glass-card active-mode p-3 rounded-xl flex flex-col items-center justify-center gap-2 relative overflow-hidden aspect-video text-center w-full"
+                    : "mode-card glass-card p-3 rounded-xl flex flex-col items-center justify-center gap-2 group hover:scale-[1.02] aspect-video opacity-80 hover:opacity-100 text-center w-full";
+
+                html += `<button class="${btnClass}" onclick="setMode('${mode.key}')" data-mode="${mode.key}">`;
+                if (isActive) html += `<div class="absolute inset-0 bg-primary/10 transition-colors"></div>`;
+                html += `<span class="material-symbols-outlined text-2xl ${isActive ? 'text-primary drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]' : 'text-slate-400 group-hover:text-white transition-colors'}">${mode.icon}</span>`;
+                html += `<span class="font-display font-medium text-sm ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}">${mode.label}</span>`;
+                html += `</button>`;
+            } else {
+                // For long list buttons (Klasik, Eksperimental, Kustom)
+                html += `<button class="${btnClass}" onclick="setMode('${mode.key}')" data-mode="${mode.key}">`;
+                if (isActive) {
+                    html += `<div class="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
+                        <div class="relative z-10 flex items-center gap-4">
+                            <span class="w-1 h-8 rounded-full bg-primary shadow-[0_0_10px_rgba(56,189,248,0.8)]"></span>
+                            <span class="font-display font-semibold text-lg text-white tracking-wide">${mode.label}</span>
+                        </div>
+                        <div class="relative z-10 w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse-soft"></div>`;
+                } else {
+                    html += `<div class="flex items-center gap-4">
+                            <span class="w-1 h-8 rounded-full bg-white/10 group-hover:bg-primary/50 transition-colors"></span>
+                            <span class="font-display font-medium text-lg text-slate-300 group-hover:text-white transition-colors">${mode.label}</span>
+                        </div>
+                        <span class="material-symbols-outlined text-lg opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all text-slate-400">${mode.icon}</span>`;
+                }
+                html += `</button>`;
+            }
+        });
+
+        html += `</div></div>`;
+    }
+
+    document.getElementById('modeList').innerHTML = html;
+}
