@@ -720,7 +720,7 @@ function init() {
     });
 
     window.addEventListener('keydown', (e) => {
-        if ((e.code === 'Space' || e.code === 'Escape') && isPlaying) {
+        if ((e.code === 'Space' || e.code === 'Escape') && gameState === 'playing') {
             e.preventDefault();
             togglePause();
         }
@@ -1114,21 +1114,7 @@ function drawBackground() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw animated grid
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(0, 212, 255, 0.04)';
-    const gridSize = 50;
-    const offset = (timeSurvived * 20) % gridSize; // Slowly moving grid
-
-    ctx.beginPath();
-    for (let x = offset; x < canvas.width; x += gridSize) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-    }
-    for (let y = offset; y < canvas.height; y += gridSize) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-    }
-    ctx.stroke();
+    // Grid removed in favor of CSS dynamic background
 }
 
 function togglePause() {
@@ -1180,6 +1166,7 @@ function startGame() {
     sfx.init();
     sfx.play('start');
 
+    document.body.className = 'bg-playing';
     gameState = 'playing';
     isPaused = false;
     timeSurvived = 0;
@@ -1316,6 +1303,7 @@ function gameOver() {
 }
 
 function showMainMenu() {
+    document.body.className = 'bg-menu';
     gameState = 'menu';
     isPaused = false;
     entities = [];
@@ -2033,6 +2021,12 @@ function initSliders() {
 }
 initSliders();
 
+// Start background animation on load
+document.body.className = 'bg-menu';
+gameState = 'menu';
+lastTime = performance.now();
+animationId = requestAnimationFrame(gameLoop);
+
 function renderModeList(activeKey) {
     let html = '';
 
@@ -2073,14 +2067,14 @@ function renderModeList(activeKey) {
                     ? "mode-card glass-card active-mode p-3 rounded-xl flex flex-col items-center justify-center gap-2 relative overflow-hidden aspect-video text-center w-full"
                     : "mode-card glass-card p-3 rounded-xl flex flex-col items-center justify-center gap-2 group hover:scale-[1.02] aspect-video opacity-80 hover:opacity-100 text-center w-full";
 
-                html += `<button class="${btnClass}" onclick="setMode('${mode.key}')" data-mode="${mode.key}">`;
+                html += `<button class="${btnClass}" data-mode="${mode.key}">`;
                 if (isActive) html += `<div class="absolute inset-0 bg-primary/10 transition-colors"></div>`;
                 html += `<span class="material-symbols-outlined text-2xl ${isActive ? 'text-primary drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]' : 'text-slate-400 group-hover:text-white transition-colors'}">${mode.icon}</span>`;
                 html += `<span class="font-display font-medium text-sm ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}">${mode.label}</span>`;
                 html += `</button>`;
             } else {
                 // For long list buttons (Klasik, Eksperimental, Kustom)
-                html += `<button class="${btnClass}" onclick="setMode('${mode.key}')" data-mode="${mode.key}">`;
+                html += `<button class="${btnClass}" data-mode="${mode.key}">`;
                 if (isActive) {
                     html += `<div class="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
                         <div class="relative z-10 flex items-center gap-4">
@@ -2103,4 +2097,11 @@ function renderModeList(activeKey) {
     }
 
     document.getElementById('modeList').innerHTML = html;
+
+    // Attach event listeners
+    document.querySelectorAll('#modeList button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            setMode(btn.dataset.mode);
+        });
+    });
 }

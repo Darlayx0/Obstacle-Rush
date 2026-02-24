@@ -34,10 +34,20 @@ body {
   height: 100%;
   overflow: hidden;
   background-color: var(--bg-color);
+  background-image: radial-gradient(circle at 50% 10%, #0f172a 0%, #030612 100%);
   font-family: 'Inter', 'Outfit', system-ui, sans-serif;
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background Gradients Futuristic */
+body.bg-menu {
+  background: radial-gradient(circle at 10% 20%, #0f172a 0%, #050811 70%, #02040a 100%);
+}
+
+body.bg-playing {
+  background: radial-gradient(circle at 50% 90%, #17113a 0%, #0a0f1e 60%, #030612 100%);
 }
 
 /* Ambient background effects */

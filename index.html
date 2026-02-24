@@ -110,15 +110,16 @@
         </div>
       </div>
 
-      <div class="flex-1 relative flex flex-col">
-        <div class="flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative z-10" style="overflow-y: auto;">
+      <div class="flex-1 relative flex flex-col h-full overflow-y-auto overflow-x-hidden">
+        <div class="p-8 md:p-12 lg:p-16 flex flex-col relative z-10 min-h-full">
           <div
             class="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2">
           </div>
 
-          <div class="mb-8">
+          <div class="mb-8 mt-4 pt-4">
             <h2 id="infoTitle"
-              class="text-5xl md:text-6xl font-display font-bold text-white mb-4 tracking-tight drop-shadow-lg">
+              class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4 tracking-tight drop-shadow-lg"
+              style="line-height:1.2; padding-top: 0.2em;">
               Obstacles
             </h2>
             <p id="infoDesc"
@@ -133,7 +134,7 @@
 
           <!-- Modul Pencapaian (Hanya terlihat jika bukan Mode Custom) -->
           <div id="modeAchPanel"
-            class="glass-card p-8 rounded-2xl mb-auto border-t border-white/10 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md">
+            class="glass-card p-8 rounded-2xl border-t border-white/10 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md mb-8">
             <!-- Dynamically populated by updateModeStatsPanel() -->
           </div>
 
@@ -289,9 +290,8 @@
         </div>
 
         <!-- Start Button Area -->
-        <div
-          class="relative z-20 mt-auto px-8 md:px-16 pb-12 pt-8 bg-gradient-to-t from-background-dark/90 to-transparent shrink-0">
-          <div class="flex flex-col items-center gap-6">
+        <div class="mt-auto pt-8">
+          <div class="flex flex-col items-center gap-6 pb-4">
             <div id="highScoreContainer" class="flex flex-col items-center">
               <span class="text-xs font-display tracking-[0.3em] text-slate-400 uppercase mb-2">Waktu Terbaik</span>
               <div class="flex items-center gap-3">
@@ -302,14 +302,14 @@
               </div>
             </div>
             <button id="startBtn"
-              class="group relative w-full max-w-lg h-16 rounded-full overflow-hidden transition-all hover:scale-[1.02] shadow-glow hover:shadow-glow-hover">
+              class="group relative w-full max-w-lg h-16 rounded-full overflow-hidden transition-all hover:scale-[1.02] shadow-glow hover:shadow-glow-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900 border border-primary/30">
               <div
                 class="absolute inset-0 bg-gradient-to-r from-primary via-blue-500 to-indigo-600 transition-transform duration-500 group-hover:scale-105">
               </div>
               <div
                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000">
               </div>
-              <div class="relative h-full flex items-center justify-between px-8">
+              <div class="relative h-full flex items-center justify-between px-8 bg-black/10">
                 <span class="font-display font-bold text-lg tracking-widest text-white uppercase"
                   style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Main Sekarang</span>
                 <div
