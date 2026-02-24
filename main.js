@@ -308,7 +308,7 @@ class Projectile {
             this.y = startY;
         }
 
-        const speedMult = 1 + (timeSurvived / 120);
+        const speedMult = 1 + (timeSurvived / 240);
         let baseSpeed = modConfig.speed * speedMult * 1.2;
 
         if (this.type === 'shotgun') {
@@ -438,7 +438,7 @@ class Obstacle {
         const targetY = canvas.height / 2 + (Math.random() - 0.5) * canvas.height * 0.5;
         const angle = Math.atan2(targetY - this.y, targetX - this.x);
 
-        const speedMult = 1 + (timeSurvived / 120);
+        const speedMult = 1 + (timeSurvived / 240);
         const speed = modConfig.speed * speedMult * (0.8 + Math.random() * 0.4);
 
         this.vx = Math.cos(angle) * speed;
@@ -575,8 +575,9 @@ class Laser {
 class Target {
     constructor() {
         this.radius = 12;
-        this.x = this.radius + Math.random() * (canvas.width - this.radius * 2);
-        this.y = this.radius + Math.random() * (canvas.height - this.radius * 2);
+        const margin = 50;
+        this.x = margin + Math.random() * (canvas.width - margin * 2);
+        this.y = margin + Math.random() * (canvas.height - margin * 2);
         this.collected = false;
         this.pulsePhase = Math.random() * Math.PI * 2;
     }
@@ -1034,19 +1035,23 @@ function buildModConfig() {
 }
 
 function drawBackground() {
-    ctx.fillStyle = '#050811';
+    // Cyberpunk trailing effect (don't clear entirely, leave trails)
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(10, 14, 30, 0.25)'; // Dark blue tint with low alpha for trails
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Draw animated grid
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(100, 120, 200, 0.04)';
+    ctx.strokeStyle = 'rgba(0, 212, 255, 0.04)';
     const gridSize = 50;
+    const offset = (timeSurvived * 20) % gridSize; // Slowly moving grid
 
     ctx.beginPath();
-    for (let x = 0; x < canvas.width; x += gridSize) {
+    for (let x = offset; x < canvas.width; x += gridSize) {
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
     }
-    for (let y = 0; y < canvas.height; y += gridSize) {
+    for (let y = offset; y < canvas.height; y += gridSize) {
         ctx.moveTo(0, y);
         ctx.lineTo(canvas.width, y);
     }
@@ -1155,6 +1160,19 @@ function gameOver() {
     cancelAnimationFrame(animationId);
     uiLayer.style.pointerEvents = 'auto';
     canvas.style.cursor = 'default';
+
+    // Spawn player shatter particles
+    for (let i = 0; i < 40; i++) {
+        particles.push(new Particle(player.x, player.y, '#06b6d4'));
+        particles.push(new Particle(player.x, player.y, '#ffffff'));
+    }
+    // Also shatter mirror player if present
+    if (mirrorPlayer && (currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer))) {
+        for (let i = 0; i < 40; i++) {
+            particles.push(new Particle(mirrorPlayer.x, mirrorPlayer.y, '#f59e0b'));
+            particles.push(new Particle(mirrorPlayer.x, mirrorPlayer.y, '#ffffff'));
+        }
+    }
 
     // Capture previous bests BEFORE saving
     const prevTimeBest = parseFloat(localStorage.getItem(getStoreKey())) || 0;
@@ -1575,7 +1593,7 @@ function gameLoop(currentTime) {
 
     let pRate = 0;
     if (modConfig.proSpawn > 0) {
-        const growthPower = Math.pow(modConfig.obsGrowth || 0.97, timeSurvived);
+        const growthPower = Math.pow(modConfig.obsGrowth || 0.985, timeSurvived);
         pRate = Math.max(0.1, modConfig.proSpawn * growthPower);
     }
 
@@ -1674,43 +1692,92 @@ function gameLoop(currentTime) {
                 entity.collected = true;
                 targetScore++;
                 sfx.play('target');
-                // Particle burst effect
+                // Target Particle burst effect
                 for (let p = 0; p < 12; p++) {
-                    const angle = (Math.PI * 2 / 12) * p;
-                    const speed = 60 + Math.random() * 80;
-                    const px = entity.x, py = entity.y;
-                    const pvx = Math.cos(angle) * speed, pvy = Math.sin(angle) * speed;
-                    const pLife = 0.3 + Math.random() * 0.2;
-                    let pTime = 0;
-                    const pId = requestAnimationFrame(function drawP(ts) {
-                        pTime += 0.016;
-                        if (pTime > pLife) return;
-                        const x = px + pvx * pTime, y = py + pvy * pTime;
-                        const alpha = 1 - pTime / pLife;
-                        ctx.beginPath(); ctx.arc(x, y, 3 * alpha, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(250, 204, 21, ${alpha})`;
-                        ctx.shadowBlur = 8; ctx.shadowColor = '#facc15';
-                        ctx.fill(); ctx.shadowBlur = 0;
-                        requestAnimationFrame(drawP);
-                    });
+                    particles.push(new Particle(entity.x, entity.y, '#fef9c3'));
+                    particles.push(new Particle(entity.x, entity.y, '#facc15'));
                 }
             }
-        } else if (checkCollision(player, entity)) {
-            takeDamage(entity);
+            continue; // Targets don't kill
+        }
+
+        // Damage Collision check
+        if (!isInvulnerable && !entity.isDead()) {
+            if (checkCollision(player, entity)) {
+                // Spawn shatter particles for the colliding obstacle/projectile
+                let color1 = '#ef4444';
+                let color2 = '#ffffff';
+                if (entity instanceof Projectile) {
+                    const STYLES = {
+                        bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
+                    };
+                    color1 = STYLES[entity.type] || '#ef4444';
+                }
+                for (let p = 0; p < 20; p++) {
+                    particles.push(new Particle(entity.x, entity.y, color1));
+                    particles.push(new Particle(entity.x, entity.y, color2));
+                }
+
+                if (hit()) {
+                    return; // Hit resulted in death, exit loop
+                } else {
+                    // Pre-emptively "kill" the entity that hit us so it doesn't double-hit
+                    entity.dead = true;
+                }
+            }
         }
 
         // Mirror Player collision check
         if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer && !entity.dead) {
             if (!(entity instanceof Target) && checkCollision(mirrorPlayer, entity)) {
+                // Spawn shatter particles for the colliding obstacle/projectile
+                let color1 = '#fbbf24'; // Amber for mirror player
+                let color2 = '#ffffff';
+                if (entity instanceof Projectile) {
+                    const STYLES = {
+                        bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
+                    };
+                    color1 = STYLES[entity.type] || '#ef4444';
+                }
+                for (let p = 0; p < 20; p++) {
+                    particles.push(new Particle(entity.x, entity.y, color1));
+                    particles.push(new Particle(entity.x, entity.y, color2));
+                }
                 takeDamage(entity);
             }
         }
 
         if (entity.isDead()) {
+            // Spawn particles when an obstacle/projectile dies (e.g., hits player or goes off-screen)
+            if (entity instanceof Obstacle || entity instanceof Projectile) {
+                let color1 = '#ef4444';
+                let color2 = '#ffffff';
+                if (entity instanceof Projectile) {
+                    const STYLES = {
+                        bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
+                    };
+                    color1 = STYLES[entity.type] || '#ef4444';
+                }
+                for (let p = 0; p < 10; p++) { // Fewer particles for non-player collision death
+                    particles.push(new Particle(entity.x, entity.y, color1));
+                    particles.push(new Particle(entity.x, entity.y, color2));
+                }
+            }
             entities.splice(i, 1);
         }
     }
 
+    // Update and draw Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update(safeDt);
+        p.draw(ctx);
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+
+    // Draw UI overlay layer
     if (currentMode === 'blackout' || (currentMode === 'custom' && modConfig.blackout)) {
         const cx = player.x;
         const cy = player.y;

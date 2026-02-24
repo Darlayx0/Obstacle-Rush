@@ -48,15 +48,6 @@
           <p class="subtitle">Pilih Mode Bermain</p>
         </div>
 
-        <!-- Target Hunt Toggle -->
-        <div
-          style="margin: 0 32px 16px 32px; padding: 10px 12px; background: rgba(250, 204, 21, 0.05); border: 1px solid rgba(250, 204, 21, 0.15); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted);">🎯 Target Hunt (semua mode)</span>
-          <label class="toggle-switch" style="transform: scale(0.8); transform-origin: right center;">
-            <input type="checkbox" id="togTargetHunt" checked>
-            <span class="slider round"></span>
-          </label>
-        </div>
 
         <div class="mode-list" id="modeList">
           <!-- Dynamically populated by JS -->
@@ -293,6 +284,16 @@
                 AI: <span id="valBotLevel" class="val-badge bot-badge" style="padding: 2px 6px; font-size: 0.7rem;">1 -
                   Noob</span></label>
               <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1">
+            </div>
+          </div>
+          <!-- Gameplay -->
+          <div class="settings-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="settings-label">🎯 Target Hunt (Kumpulkan skor bonus)</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togTargetHunt" checked>
+                <span class="slider round"></span>
+              </label>
             </div>
           </div>
           <!-- Sound -->
