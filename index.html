@@ -323,125 +323,188 @@
         </div>
       </div>
     </div>
-  </div>
-  </div>
 
-  <!-- Achievement Modal -->
-  <div id="achievementModal" class="menu-panel glassmorphism hidden">
-    <div class="modal-content glassmorphism" onclick="event.stopPropagation()"
-      style="max-width: 1200px; padding: 32px 40px; width: 95vw;">
-      <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">🏆 <span class="accent">Pencapaian</span></h2>
-      <div id="achievementContent" class="achievement-list">
-        <!-- Dynamically populated by renderAchievementModal -->
-      </div>
-      <div
-        style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
-        <button id="closeAchievementBtn" class="secondary-btn">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="menu-panel glassmorphism hidden">
-    <div class="modal-content glassmorphism" onclick="event.stopPropagation()" style="max-width: 420px;">
-      <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">⚙️ <span class="accent">Pengaturan</span></h2>
-      <div class="settings-list">
-        <!-- Bot AI -->
-        <div class="settings-item">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="settings-label">🤖 Tonton Bot AI Bermain</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="togBot">
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <div id="botLevelContainer" class="bot-level-container hidden-content"
-            style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
-            <label
-              style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; width: 100%;">Tingkat
-              AI: <span id="valBotLevel" class="val-badge bot-badge" style="padding: 2px 6px; font-size: 0.7rem;">1 -
-                Noob</span></label>
-            <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1">
-          </div>
+    <!-- Achievement Modal -->
+    <div id="achievementModal" class="menu-panel glassmorphism hidden">
+      <div class="modal-content glassmorphism" onclick="event.stopPropagation()"
+        style="max-width: 1200px; padding: 32px 40px; width: 95vw;">
+        <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">🏆 <span class="accent">Pencapaian</span></h2>
+        <div id="achievementContent" class="achievement-list">
+          <!-- Dynamically populated by renderAchievementModal -->
         </div>
-        <!-- Gameplay -->
-        <div class="settings-item">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="settings-label">🎯 Target Hunt (Kumpulkan skor bonus)</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="togTargetHunt" checked>
-              <span class="slider round"></span>
-            </label>
-          </div>
+        <div
+          style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+          <button id="closeAchievementBtn"
+            class="group relative px-8 h-12 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900">
+            <div class="relative h-full flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-white text-sm">close</span>
+              <span class="font-display font-semibold tracking-widest text-white uppercase text-sm">Tutup</span>
+            </div>
+          </button>
         </div>
-        <!-- Sound -->
-        <div class="settings-item">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="settings-label">🔊 Efek Suara</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="togSound" checked>
-              <span class="slider round"></span>
-            </label>
-          </div>
-        </div>
-        <div class="settings-item" id="volumeContainer">
-          <label class="settings-label" style="display: flex; justify-content: space-between; width: 100%;">🔉 Volume
-            <span id="valVolume" class="val-badge">80%</span></label>
-          <input type="range" id="rngVolume" min="0" max="100" step="5" value="80">
-        </div>
-        <!-- Danger Zone -->
-        <div class="settings-item settings-danger-zone">
-          <span class="settings-label" style="color: var(--accent-red);">⚠️ Zona Bahaya</span>
-          <button id="resetAllDataBtn" class="danger-btn" style="width: 100%; margin-top: 8px;">🔥 Hapus Semua
-            Data</button>
-          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 6px;">Menghapus semua progres,
-            pencapaian, dan high score.</p>
-        </div>
-      </div>
-      <div
-        style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
-        <button id="closeSettingsBtn" class="secondary-btn">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pause Menu -->
-  <div id="pauseMenu" class="menu-panel glassmorphism hidden">
-    <h1 class="title">GAME <span class="accent">PAUSED</span></h1>
-    <button id="resumeBtn" class="primary-btn">LANJUTKAN</button>
-    <button id="pauseRestartBtn" class="secondary-btn">COBA LAGI</button>
-    <button id="pauseMenuBtn" class="secondary-btn">MENU UTAMA</button>
-  </div>
-
-  <!-- Game Over Menu -->
-  <div id="gameOverMenu" class="menu-panel glassmorphism hidden">
-    <h1 class="title loss-title">GAME <span class="accent-red">OVER</span></h1>
-
-    <!-- Score Stats Grid -->
-    <div class="go-stats-grid">
-      <div class="go-stat-card go-stat-time">
-        <span class="go-stat-icon">⏱️</span>
-        <span class="go-stat-label">Waktu Bertahan</span>
-        <span id="goTimeValue" class="go-stat-value">0,00s</span>
-        <span id="goTimeBest" class="go-stat-best">Terbaik: 0,00s</span>
-        <span id="goTimeDelta" class="go-stat-delta hidden"></span>
-      </div>
-      <div class="go-stat-card go-stat-target">
-        <span class="go-stat-icon">🎯</span>
-        <span class="go-stat-label">Target Terkumpul</span>
-        <span id="goTargetValue" class="go-stat-value">0</span>
-        <span id="goTargetBest" class="go-stat-best">Terbaik: 0</span>
-        <span id="goTargetDelta" class="go-stat-delta hidden"></span>
       </div>
     </div>
 
-    <!-- Achievement Progress -->
-    <div id="gameOverAchProgress" class="go-ach-container"></div>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="menu-panel glassmorphism hidden">
+      <div class="modal-content glassmorphism" onclick="event.stopPropagation()" style="max-width: 420px;">
+        <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">⚙️ <span class="accent">Pengaturan</span></h2>
+        <div class="settings-list">
+          <!-- Bot AI -->
+          <div class="settings-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="settings-label">🤖 Tonton Bot AI Bermain</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togBot">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div id="botLevelContainer" class="bot-level-container hidden-content"
+              style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+              <label
+                style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; width: 100%;">Tingkat
+                AI: <span id="valBotLevel" class="val-badge bot-badge" style="padding: 2px 6px; font-size: 0.7rem;">1 -
+                  Noob</span></label>
+              <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1">
+            </div>
+          </div>
+          <!-- Gameplay -->
+          <div class="settings-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="settings-label">🎯 Target Hunt (Kumpulkan skor bonus)</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togTargetHunt" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+          <!-- Sound -->
+          <div class="settings-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="settings-label">🔊 Efek Suara</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="togSound" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-item" id="volumeContainer">
+            <label class="settings-label" style="display: flex; justify-content: space-between; width: 100%;">🔉 Volume
+              <span id="valVolume" class="val-badge">80%</span></label>
+            <input type="range" id="rngVolume" min="0" max="100" step="5" value="80">
+          </div>
+          <!-- Danger Zone -->
+          <div class="settings-item settings-danger-zone">
+            <span class="settings-label" style="color: var(--accent-red);">⚠️ Zona Bahaya</span>
+            <button id="resetAllDataBtn" class="danger-btn" style="width: 100%; margin-top: 8px;">🔥 Hapus Semua
+              Data</button>
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 6px;">Menghapus semua progres,
+              pencapaian, dan high score.</p>
+          </div>
+        </div>
+        <div
+          style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+          <button id="closeSettingsBtn"
+            class="group relative px-8 h-12 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900">
+            <div class="relative h-full flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-white text-sm">close</span>
+              <span class="font-display font-semibold tracking-widest text-white uppercase text-sm">Tutup</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
 
-    <button id="restartBtn" class="primary-btn">COBA LAGI</button>
-    <button id="menuBtn" class="secondary-btn">MENU UTAMA</button>
-  </div>
-  </div>
+    <!-- Pause Menu -->
+    <div id="pauseMenu"
+      class="menu-panel glassmorphism hidden flex flex-col items-center justify-center gap-6 p-10 min-w-[400px]">
+      <h1 class="text-5xl font-display font-bold tracking-widest drop-shadow-md mb-4 uppercase">GAME <span
+          class="text-primary drop-shadow-[0_0_12px_rgba(56,189,248,0.8)]">PAUSED</span></h1>
+
+      <button id="resumeBtn"
+        class="group relative w-full h-14 rounded-full overflow-hidden transition-all hover:scale-[1.02] shadow-glow hover:shadow-glow-hover focus:outline-none border border-primary/30">
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-primary via-blue-500 to-indigo-600 transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="relative h-full flex items-center justify-center gap-3 bg-black/10">
+          <span class="material-symbols-outlined text-white font-bold">play_arrow</span>
+          <span class="font-display font-bold tracking-widest text-white uppercase text-lg"
+            style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Lanjutkan</span>
+        </div>
+      </button>
+
+      <button id="pauseRestartBtn"
+        class="group relative w-full h-14 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none">
+        <div class="relative h-full flex items-center justify-center gap-3">
+          <span class="material-symbols-outlined text-white font-bold">replay</span>
+          <span class="font-display font-semibold tracking-widest text-white uppercase">Coba Lagi</span>
+        </div>
+      </button>
+
+      <button id="pauseMenuBtn"
+        class="group relative w-full h-14 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none">
+        <div class="relative h-full flex items-center justify-center gap-3">
+          <span class="material-symbols-outlined text-white font-bold">home</span>
+          <span class="font-display font-semibold tracking-widest text-white uppercase">Menu Utama</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Game Over Menu -->
+    <div id="gameOverMenu"
+      class="menu-panel glassmorphism hidden flex flex-col items-center justify-center gap-6 p-10 min-w-[500px]">
+      <h1 class="text-6xl font-display font-bold tracking-widest drop-shadow-md mb-2 uppercase">GAME <span
+          class="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]">OVER</span></h1>
+
+      <!-- Score Stats Grid -->
+      <div class="grid grid-cols-2 gap-4 w-full mb-4">
+        <div
+          class="bg-black/40 border border-white/5 rounded-2xl p-6 flex flex-col items-center gap-2 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
+          <span class="material-symbols-outlined text-primary text-3xl">timer</span>
+          <span class="text-xs font-display tracking-[0.2em] text-slate-400 uppercase">Waktu Bertahan</span>
+          <span id="goTimeValue"
+            class="text-4xl font-display font-bold text-white drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]">0,00s</span>
+          <span id="goTimeBest" class="text-xs text-slate-500">Terbaik: 0,00s</span>
+          <span id="goTimeDelta" class="text-xs hidden"></span>
+        </div>
+        <div
+          class="bg-black/40 border border-white/5 rounded-2xl p-6 flex flex-col items-center gap-2 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-yellow-500/10 to-transparent pointer-events-none"></div>
+          <span class="material-symbols-outlined text-yellow-500 text-3xl">track_changes</span>
+          <span class="text-xs font-display tracking-[0.2em] text-slate-400 uppercase">Target Terkumpul</span>
+          <span id="goTargetValue"
+            class="text-4xl font-display font-bold text-white drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">0</span>
+          <span id="goTargetBest" class="text-xs text-slate-500">Terbaik: 0</span>
+          <span id="goTargetDelta" class="text-xs hidden"></span>
+        </div>
+      </div>
+
+      <!-- Achievement Progress -->
+      <div id="gameOverAchProgress" class="w-full mb-2"></div>
+
+      <button id="restartBtn"
+        class="group relative w-full h-16 rounded-full overflow-hidden transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] focus:outline-none border border-red-500/30">
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-red-500 via-rose-600 to-pink-600 transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="relative h-full flex items-center justify-center gap-3 bg-black/10">
+          <span class="material-symbols-outlined text-white font-bold">replay</span>
+          <span class="font-display font-bold tracking-widest text-white uppercase text-lg"
+            style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Coba Lagi</span>
+        </div>
+      </button>
+
+      <button id="menuBtn"
+        class="group relative w-full h-14 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none">
+        <div class="relative h-full flex items-center justify-center gap-3">
+          <span class="material-symbols-outlined text-white font-bold">home</span>
+          <span class="font-display font-semibold tracking-widest text-white uppercase">Menu Utama</span>
+        </div>
+      </button>
+    </div>
+
+  </div> <!-- Ends #uiLayer -->
 
   <!-- Custom Confirm Dialog -->
   <div id="customConfirmOverlay" class="confirm-overlay hidden">

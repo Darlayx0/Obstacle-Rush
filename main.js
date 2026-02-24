@@ -1554,18 +1554,22 @@ function updateGameOverProgress() {
     if (!el || currentMode === 'custom') { if (el) el.innerHTML = ''; return; }
     const stats = getModeAchStats(currentMode);
     el.innerHTML = `
-        <div class="go-ach-section">
-            <div class="go-ach-title">Pencapaian Mode</div>
-            <div class="go-ach-bars">
-                <div class="go-ach-bar-row">
-                    <span class="go-ach-bar-label">⏱️ Waktu</span>
-                    <div class="ach-bar-bg go-bar"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
-                    <span class="go-ach-bar-pct">${stats.timePct}%</span>
+        <div class="w-full bg-black/30 border border-white/5 rounded-2xl p-4 flex flex-col gap-3">
+            <div class="text-[0.65rem] font-display tracking-[0.2em] text-slate-400 uppercase drop-shadow-sm font-semibold">Pencapaian Mode</div>
+            <div class="flex flex-col gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-white/80 w-16">⏱️ Waktu</span>
+                    <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden relative border border-white/10 shadow-inner">
+                        <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-primary to-blue-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)] transition-all duration-1000" style="width:${stats.timePct}%"></div>
+                    </div>
+                    <span class="text-xs font-bold text-primary w-10 text-right">${stats.timePct}%</span>
                 </div>
-                <div class="go-ach-bar-row">
-                    <span class="go-ach-bar-label">🎯 Target</span>
-                    <div class="ach-bar-bg go-bar"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
-                    <span class="go-ach-bar-pct">${stats.targetPct}%</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-white/80 w-16">🎯 Target</span>
+                    <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden relative border border-white/10 shadow-inner">
+                        <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-1000" style="width:${stats.targetPct}%"></div>
+                    </div>
+                    <span class="text-xs font-bold text-yellow-500 w-10 text-right">${stats.targetPct}%</span>
                 </div>
             </div>
         </div>
@@ -1595,16 +1599,20 @@ function renderAchievementModal() {
                     <span class="ach-overall-pct">${overall.avgCombined}%</span>
                 </div>
             </div>
-            <div class="ach-dual-bars">
-                <div class="ach-dual-row">
-                    <span class="ach-dual-label">⏱️ Waktu</span>
-                    <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${overall.avgTime}%"></div></div>
-                    <span class="ach-dual-val">${overall.avgTime}% <span style="opacity:0.5;font-size:0.65rem">/ 300s</span></span>
+            <div class="flex flex-col gap-3 mt-4 p-4 bg-black/20 rounded-xl border border-white/5">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-white/80 w-20">⏱️ Waktu</span>
+                    <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden relative border border-white/10 shadow-inner">
+                        <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-primary to-blue-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)] transition-all duration-1000" style="width:${overall.avgTime}%"></div>
+                    </div>
+                    <span class="text-xs font-bold text-primary w-20 text-right">${overall.avgTime}% <span class="opacity-50 text-[0.65rem] font-normal">/ 300s</span></span>
                 </div>
-                <div class="ach-dual-row">
-                    <span class="ach-dual-label">🎯 Target</span>
-                    <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${overall.avgTarget}%"></div></div>
-                    <span class="ach-dual-val">${overall.avgTarget}% <span style="opacity:0.5;font-size:0.65rem">/ 50</span></span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-white/80 w-20">🎯 Target</span>
+                    <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden relative border border-white/10 shadow-inner">
+                        <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-1000" style="width:${overall.avgTarget}%"></div>
+                    </div>
+                    <span class="text-xs font-bold text-yellow-500 w-20 text-right">${overall.avgTarget}% <span class="opacity-50 text-[0.65rem] font-normal">/ 50</span></span>
                 </div>
             </div>
         </div>
@@ -1641,16 +1649,20 @@ function renderAchievementModal() {
                         <span class="ach-hs-val ach-hs-gold">${highTarget > 0 ? Math.floor(highTarget) : '—'}</span>
                     </div>
                 </div>
-                <div class="ach-dual-bars">
-                    <div class="ach-dual-row">
-                        <span class="ach-dual-label">⏱️</span>
-                        <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-time" style="width:${stats.timePct}%"></div></div>
-                        <span class="ach-dual-val">${stats.timePct}% <span style="opacity:0.5;font-size:0.65rem">/ 300s</span></span>
+                <div class="flex flex-col gap-2 mt-3 pt-3 border-t border-white/5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[0.65rem] font-semibold text-white/70 w-5">⏱️</span>
+                        <div class="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden relative shadow-inner">
+                            <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-primary to-blue-500 rounded-full" style="width:${stats.timePct}%"></div>
+                        </div>
+                        <span class="text-[0.65rem] font-bold text-primary w-16 text-right">${stats.timePct}% <span class="opacity-50 text-[0.55rem] font-normal">/ 300s</span></span>
                     </div>
-                    <div class="ach-dual-row">
-                        <span class="ach-dual-label">🎯</span>
-                        <div class="ach-bar-bg"><div class="ach-bar-fill ach-bar-target" style="width:${stats.targetPct}%"></div></div>
-                        <span class="ach-dual-val">${stats.targetPct}% <span style="opacity:0.5;font-size:0.65rem">/ 50</span></span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[0.65rem] font-semibold text-white/70 w-5">🎯</span>
+                        <div class="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden relative shadow-inner">
+                            <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full" style="width:${stats.targetPct}%"></div>
+                        </div>
+                        <span class="text-[0.65rem] font-bold text-yellow-500 w-16 text-right">${stats.targetPct}% <span class="opacity-50 text-[0.55rem] font-normal">/ 50</span></span>
                     </div>
                 </div>
             </div>
