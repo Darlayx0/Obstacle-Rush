@@ -151,7 +151,7 @@ let lastTime = 0;
 let timeSurvived = 0; // in seconds
 let targetScore = 0; // for target hunt
 let targetHuntEnabled = true; // target hunt toggle
-let isPlaying = false;
+let gameState = 'menu'; // 'menu', 'playing', 'gameover'
 let isPaused = false;
 
 // Bot tracking
@@ -263,9 +263,16 @@ class Player {
         this.x = canvas.width / 2;
         this.y = canvas.height / 2;
         this.radius = PLAYER_RADIUS;
+        this.trail = [];
     }
 
     update() {
+        // Record trail
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > 15) {
+            this.trail.shift();
+        }
+
         this.x += (mouse.x - this.x) * MOUSE_FOLLOW_SPEED;
         this.y += (mouse.y - this.y) * MOUSE_FOLLOW_SPEED;
 
@@ -276,6 +283,24 @@ class Player {
     draw(ctx) {
         if (isInvulnerable) {
             if (Math.floor(invulnerableTimer * 10) % 2 === 0) return;
+        }
+
+        // Draw trail behind the player
+        if (this.trail.length > 1 && currentMode !== 'disguise') {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(this.trail[0].x, this.trail[0].y);
+            for (let i = 1; i < this.trail.length; i++) {
+                ctx.lineTo(this.trail[i].x, this.trail[i].y);
+            }
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+            ctx.lineWidth = this.radius * 0.8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#06b6d4';
+            ctx.stroke();
+            ctx.restore();
         }
 
         // Disguise mode: draw as obstacle-like
@@ -1101,7 +1126,7 @@ function drawBackground() {
 }
 
 function togglePause() {
-    if (!isPlaying) return;
+    if (gameState !== 'playing') return;
     isPaused = !isPaused;
 
     if (isPaused) {
@@ -1149,7 +1174,7 @@ function startGame() {
     sfx.init();
     sfx.play('start');
 
-    isPlaying = true;
+    gameState = 'playing';
     isPaused = false;
     timeSurvived = 0;
     targetScore = 0;
@@ -1199,8 +1224,7 @@ function startGame() {
 }
 
 function gameOver() {
-    isPlaying = false;
-    cancelAnimationFrame(animationId);
+    gameState = 'gameover';
     uiLayer.style.pointerEvents = 'auto';
     canvas.style.cursor = 'default';
 
@@ -1286,9 +1310,17 @@ function gameOver() {
 }
 
 function showMainMenu() {
-    isPlaying = false;
+    gameState = 'menu';
     isPaused = false;
+    entities = [];
+    particles = [];
+
     cancelAnimationFrame(animationId);
+
+    // Resume animation loop for background effects
+    lastTime = performance.now();
+    animationId = requestAnimationFrame(gameLoop);
+
     canvas.style.cursor = 'default'; // Show cursor again
 
     mainMenu.classList.remove('hidden');
@@ -1610,198 +1642,223 @@ function checkCollision(p, entity) {
 }
 
 function gameLoop(currentTime) {
-    if (!isPlaying || isPaused) return;
+    if (isPaused) return;
 
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
-
     const safeDt = Math.min(dt, 0.1);
-    timeSurvived += safeDt;
+
+    if (gameState === 'playing') {
+        timeSurvived += safeDt;
+    }
 
     drawBackground();
-    updateScoreDisplay();
 
-    // Determine current effective spawn rates
-    let oRate = 0;
-    if (modConfig.obsSpawn > 0) {
-        const growthPower = Math.pow(modConfig.obsGrowth, timeSurvived);
-        oRate = Math.max(0.05, modConfig.obsSpawn * growthPower);
-    }
-
-    let lRate = 0;
-    if (modConfig.lasSpawn > 0) {
-        const growthPower = Math.pow(modConfig.lasGrowth, timeSurvived);
-        lRate = Math.max(0.1, modConfig.lasSpawn * growthPower);
-    }
-
-    let pRate = 0;
-    if (modConfig.proSpawn > 0) {
-        const growthPower = Math.pow(modConfig.obsGrowth || 0.985, timeSurvived);
-        pRate = Math.max(0.1, modConfig.proSpawn * growthPower);
-    }
-
-    // Obstacle Spawner
-    if (oRate > 0) {
+    // ================= MAIN MENU BACKGROUND ANIMATION =================
+    if (gameState === 'menu') {
+        // Slow trickle of random entities to populate background
         obsSpawnTimer += safeDt;
-        if (obsSpawnTimer >= oRate) {
+        lasSpawnTimer += safeDt;
+        proSpawnTimer += safeDt;
+
+        if (obsSpawnTimer >= 1.5 && Math.random() < 0.5) {
             const obs = new Obstacle();
+            // Slow them down slightly for menu
+            obs.vx *= 0.5;
+            obs.vy *= 0.5;
             entities.push(obs);
-
-            // Mirror mode: spawn symmetric duplicate
-            if (currentMode === 'mirror' || (currentMode === 'custom' && modConfig.mirror)) {
-                const mirrorObs = new Obstacle();
-                mirrorObs.x = canvas.width - obs.x;
-                mirrorObs.y = canvas.height - obs.y;
-                mirrorObs.vx = -obs.vx;
-                mirrorObs.vy = -obs.vy;
-                mirrorObs.radius = obs.radius;
-                entities.push(mirrorObs);
-            }
-
             obsSpawnTimer = 0;
         }
-    }
 
-    // Laser Spawner
-    if (lRate > 0) {
-        lasSpawnTimer += safeDt;
-        if (lasSpawnTimer >= lRate) {
+        if (lasSpawnTimer >= 3.0 && Math.random() < 0.3) {
             entities.push(new Laser());
             lasSpawnTimer = 0;
         }
-    }
 
-    // Projectile Spawner
-    if (pRate > 0) {
-        proSpawnTimer += safeDt;
-        if (proSpawnTimer >= pRate) {
-            entities.push(new Projectile());
+        if (proSpawnTimer >= 2.0 && Math.random() < 0.4) {
+            const pro = new Projectile();
+            // Menu projectiles should mostly just float across the screen
+            pro.vx *= 0.6;
+            pro.vy *= 0.6;
+            entities.push(pro);
             proSpawnTimer = 0;
         }
     }
+    // ==================================================================
 
-    // Target Spawner (active in all modes when target hunt is enabled)
-    if (targetHuntEnabled && currentMode !== 'custom') {
-        if (timeSurvived >= 10) {
-            targetSpawnTimer += safeDt;
-            const hasActiveTarget = entities.some(e => e instanceof Target && !e.collected);
-            if (!hasActiveTarget && targetSpawnTimer >= 2.0) {
-                entities.push(new Target());
-                targetSpawnTimer = 0;
+    // ================= MAIN PLAYING LOGIC =================
+    if (gameState === 'playing') {
+        updateScoreDisplay();
+
+        // Determine current effective spawn rates
+        let oRate = 0;
+        if (modConfig.obsSpawn > 0) {
+            const growthPower = Math.pow(modConfig.obsGrowth, timeSurvived);
+            oRate = Math.max(0.05, modConfig.obsSpawn * growthPower);
+        }
+
+        let lRate = 0;
+        if (modConfig.lasSpawn > 0) {
+            const growthPower = Math.pow(modConfig.lasGrowth, timeSurvived);
+            lRate = Math.max(0.1, modConfig.lasSpawn * growthPower);
+        }
+
+        let pRate = 0;
+        if (modConfig.proSpawn > 0) {
+            const growthPower = Math.pow(modConfig.obsGrowth || 0.985, timeSurvived);
+            pRate = Math.max(0.1, modConfig.proSpawn * growthPower);
+        }
+
+        // Obstacle Spawner
+        if (oRate > 0) {
+            obsSpawnTimer += safeDt;
+            if (obsSpawnTimer >= oRate) {
+                const obs = new Obstacle();
+                entities.push(obs);
+
+                // Mirror mode: spawn symmetric duplicate
+                if (currentMode === 'mirror' || (currentMode === 'custom' && modConfig.mirror)) {
+                    const mirrorObs = new Obstacle();
+                    mirrorObs.x = canvas.width - obs.x;
+                    mirrorObs.y = canvas.height - obs.y;
+                    mirrorObs.vx = -obs.vx;
+                    mirrorObs.vy = -obs.vy;
+                    mirrorObs.radius = obs.radius;
+                    entities.push(mirrorObs);
+                }
+                obsSpawnTimer = 0;
             }
         }
-    }
 
-    if (isBotPlaying) {
-        updateBot(safeDt);
-    } else {
-        player.update();
-    }
+        // Laser Spawner
+        if (lRate > 0) {
+            lasSpawnTimer += safeDt;
+            if (lasSpawnTimer >= lRate) {
+                entities.push(new Laser());
+                lasSpawnTimer = 0;
+            }
+        }
 
-    // Mirror Player mode: update & draw mirror player
-    if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer) {
-        mirrorPlayer.x = canvas.width - player.x;
-        mirrorPlayer.y = canvas.height - player.y;
-    }
+        // Projectile Spawner
+        if (pRate > 0) {
+            proSpawnTimer += safeDt;
+            if (proSpawnTimer >= pRate) {
+                entities.push(new Projectile());
+                proSpawnTimer = 0;
+            }
+        }
 
-    player.draw(ctx);
+        // Target Spawner (active in all modes when target hunt is enabled)
+        if (targetHuntEnabled && currentMode !== 'custom') {
+            if (timeSurvived >= 10) {
+                targetSpawnTimer += safeDt;
+                const hasActiveTarget = entities.some(e => e instanceof Target && !e.collected);
+                if (!hasActiveTarget && targetSpawnTimer >= 2.0) {
+                    entities.push(new Target());
+                    targetSpawnTimer = 0;
+                }
+            }
+        }
 
-    // Draw mirror player (amber color)
-    if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer) {
-        ctx.beginPath();
-        ctx.arc(mirrorPlayer.x, mirrorPlayer.y, mirrorPlayer.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#fbbf24';
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#fbbf24';
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(mirrorPlayer.x, mirrorPlayer.y, mirrorPlayer.radius * 0.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#f59e0b';
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        if (isBotPlaying) {
+            updateBot(safeDt);
+        } else {
+            player.update();
+        }
+
+        // Mirror Player mode: update & draw mirror player
+        if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer) {
+            mirrorPlayer.x = canvas.width - player.x;
+            mirrorPlayer.y = canvas.height - player.y;
+        }
+
+        player.draw(ctx);
+
+        // Draw mirror player (amber color)
+        if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer) {
+            ctx.beginPath();
+            ctx.arc(mirrorPlayer.x, mirrorPlayer.y, mirrorPlayer.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#fbbf24';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#fbbf24';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(mirrorPlayer.x, mirrorPlayer.y, mirrorPlayer.radius * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
     }
+    // =======================================================
 
     for (let i = entities.length - 1; i >= 0; i--) {
         const entity = entities[i];
         entity.update(safeDt);
         entity.draw(ctx);
 
-        // Target collection (not damage)
-        if (entity instanceof Target && !entity.collected) {
-            const dx = player.x - entity.x;
-            const dy = player.y - entity.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < (player.radius + entity.radius)) {
-                entity.collected = true;
-                targetScore++;
-                sfx.play('target');
-                // Target Particle burst effect
-                for (let p = 0; p < 12; p++) {
-                    particles.push(new Particle(entity.x, entity.y, '#fef9c3'));
-                    particles.push(new Particle(entity.x, entity.y, '#facc15'));
+        if (gameState === 'playing') {
+            // Target collection (not damage)
+            if (entity instanceof Target && !entity.collected) {
+                const dx = player.x - entity.x;
+                const dy = player.y - entity.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < (player.radius + entity.radius)) {
+                    entity.collected = true;
+                    targetScore++;
+                    sfx.play('target');
+                    // Target Particle burst effect
+                    for (let p = 0; p < 12; p++) {
+                        particles.push(new Particle(entity.x, entity.y, '#fef9c3'));
+                        particles.push(new Particle(entity.x, entity.y, '#facc15'));
+                    }
+                }
+                continue; // Targets don't kill
+            }
+
+            // Damage Collision check
+            if (!isInvulnerable && !entity.isDead()) {
+                if (checkCollision(player, entity)) {
+                    // Spawn shatter particles for the colliding obstacle/projectile
+                    let color1 = '#ef4444';
+                    let color2 = '#ffffff';
+                    if (entity instanceof Projectile) {
+                        const STYLES = {
+                            bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
+                        };
+                        color1 = STYLES[entity.type] || '#ef4444';
+                    }
+                    for (let p = 0; p < 20; p++) {
+                        particles.push(new Particle(entity.x, entity.y, color1));
+                        particles.push(new Particle(entity.x, entity.y, color2));
+                    }
+
+                    takeDamage(entity);
+                    if (playerLives <= 0) break; // Exit loop if dead
                 }
             }
-            continue; // Targets don't kill
-        }
 
-        // Damage Collision check
-        if (!isInvulnerable && !entity.isDead()) {
-            if (checkCollision(player, entity)) {
-                // Spawn shatter particles for the colliding obstacle/projectile
-                let color1 = '#ef4444';
-                let color2 = '#ffffff';
-                if (entity instanceof Projectile) {
-                    const STYLES = {
-                        bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
-                    };
-                    color1 = STYLES[entity.type] || '#ef4444';
+            // Mirror Player collision check
+            if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer && !entity.dead) {
+                if (!(entity instanceof Target) && checkCollision(mirrorPlayer, entity)) {
+                    // Spawn shatter particles for the colliding obstacle/projectile
+                    let color1 = '#fbbf24'; // Amber for mirror player
+                    let color2 = '#ffffff';
+                    if (entity instanceof Projectile) {
+                        const STYLES = {
+                            bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
+                        };
+                        color1 = STYLES[entity.type] || '#ef4444';
+                    }
+                    for (let p = 0; p < 20; p++) {
+                        particles.push(new Particle(entity.x, entity.y, color1));
+                        particles.push(new Particle(entity.x, entity.y, color2));
+                    }
+                    takeDamage(entity);
                 }
-                for (let p = 0; p < 20; p++) {
-                    particles.push(new Particle(entity.x, entity.y, color1));
-                    particles.push(new Particle(entity.x, entity.y, color2));
-                }
-
-                takeDamage(entity);
-                if (playerLives <= 0) return; // Exit loop if dead
             }
-        }
-
-        // Mirror Player collision check
-        if ((currentMode === 'mirrorPlayer' || (currentMode === 'custom' && modConfig.mirrorPlayer)) && mirrorPlayer && !entity.dead) {
-            if (!(entity instanceof Target) && checkCollision(mirrorPlayer, entity)) {
-                // Spawn shatter particles for the colliding obstacle/projectile
-                let color1 = '#fbbf24'; // Amber for mirror player
-                let color2 = '#ffffff';
-                if (entity instanceof Projectile) {
-                    const STYLES = {
-                        bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
-                    };
-                    color1 = STYLES[entity.type] || '#ef4444';
-                }
-                for (let p = 0; p < 20; p++) {
-                    particles.push(new Particle(entity.x, entity.y, color1));
-                    particles.push(new Particle(entity.x, entity.y, color2));
-                }
-                takeDamage(entity);
-            }
-        }
+        } // end gameState === 'playing' check
 
         if (entity.isDead()) {
-            // Spawn particles when an obstacle/projectile dies (e.g., hits player or goes off-screen)
-            if (entity instanceof Obstacle || entity instanceof Projectile) {
-                let color1 = '#ef4444';
-                let color2 = '#ffffff';
-                if (entity instanceof Projectile) {
-                    const STYLES = {
-                        bullet: '#ef4444', homing: '#f59e0b', shotgun: '#ef4444', wave: '#a78bfa', sniper: '#34d399'
-                    };
-                    color1 = STYLES[entity.type] || '#ef4444';
-                }
-                for (let p = 0; p < 10; p++) { // Fewer particles for non-player collision death
-                    particles.push(new Particle(entity.x, entity.y, color1));
-                    particles.push(new Particle(entity.x, entity.y, color2));
-                }
-            }
             entities.splice(i, 1);
         }
     }
