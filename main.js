@@ -802,6 +802,8 @@ function init() {
     });
     togBot.addEventListener('change', (e) => {
         isBotPlaying = e.target.checked;
+        const togS = document.getElementById('togBotSettings');
+        if (togS) togS.checked = isBotPlaying;
         if (e.target.checked) {
             botLevelContainer.classList.remove('hidden-content');
             document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
@@ -815,6 +817,8 @@ function init() {
         botLevel = parseInt(e.target.value);
         valBotLevel.textContent = BOT_LEVELS[botLevel - 1].label;
         updateBotSliderColor(e.target);
+        const rngBS = document.getElementById('rngBotLevelSettings');
+        if (rngBS) rngBS.value = botLevel;
     });
 
     function updateBotSliderColor(slider) {
@@ -859,11 +863,47 @@ function init() {
     if (rngBlackoutRadius) syncVal(rngBlackoutRadius, valBlackoutRadius, 'px');
     if (rngChainsawAmp) syncVal(rngChainsawAmp, valChainsawAmp, 'px');
 
-    // Settings modal
+    // Settings modal bindings
     const settingsModal = document.getElementById('settingsModal');
     const togSound = document.getElementById('togSound');
     const rngVolume = document.getElementById('rngVolume');
     const valVolume = document.getElementById('valVolume');
+
+    // Bind Settings AI Bot Logic
+    const togBotSettings = document.getElementById('togBotSettings');
+    const botLevelContainerSettings = document.getElementById('botLevelContainerSettings');
+    const rngBotLevelSettings = document.getElementById('rngBotLevelSettings');
+    const valBotLevelSettings = document.getElementById('valBotLevelSettings');
+    const togTargetHuntSettings = document.getElementById('togTargetHuntSettings');
+
+    if (togBotSettings) {
+        togBotSettings.addEventListener('change', (e) => {
+            isBotPlaying = e.target.checked;
+            togBot.checked = isBotPlaying; // Sync Custom
+            if (e.target.checked) {
+                botLevelContainerSettings.classList.remove('hidden-content');
+                document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
+            } else {
+                botLevelContainerSettings.classList.add('hidden-content');
+                document.getElementById('startBtn').innerHTML = 'MAIN SEKARANG <span class="arrow">→</span>';
+            }
+        });
+    }
+    if (rngBotLevelSettings) {
+        rngBotLevelSettings.addEventListener('input', (e) => {
+            botLevel = parseInt(e.target.value);
+            valBotLevelSettings.textContent = BOT_LEVELS[botLevel - 1].label;
+            rngBotLevel.value = botLevel; // Sync custom
+            updateBotSliderColor(e.target);
+        });
+    }
+    if (togTargetHuntSettings) {
+        togTargetHuntSettings.addEventListener('change', (e) => {
+            targetHuntEnabled = e.target.checked;
+            togTargetHunt.checked = targetHuntEnabled; // Sync global
+        });
+    }
+
     togSound.checked = sfx.enabled;
     rngVolume.value = sfx.volume * 100;
     valVolume.textContent = Math.round(sfx.volume * 100) + '%';
@@ -1008,7 +1048,7 @@ function updateModeStatsPanel(modeKey) {
                 </div>
                 <div class="text-center">
                     <div class="text-xs font-display uppercase tracking-widest text-slate-500 mb-1">Waktu</div>
-                    <div class="text-xs text-white p-1 px-2 bg-black/30 rounded border border-white/10">Best: ${formatTime(stats.bestTime)}</div>
+                    <div class="text-xs text-slate-400 p-1 px-2 border border-transparent">Max: 300s</div>
                 </div>
             </div>
             
@@ -1024,7 +1064,7 @@ function updateModeStatsPanel(modeKey) {
                 </div>
                 <div class="text-center">
                     <div class="text-xs font-display uppercase tracking-widest text-slate-500 mb-1">Target</div>
-                    <div class="text-xs text-white p-1 px-2 bg-black/30 rounded border border-white/10">Best: ${Math.floor(stats.bestTarget)}</div>
+                    <div class="text-xs text-slate-400 p-1 px-2 border border-transparent">Max: 50</div>
                 </div>
             </div>
             
@@ -1498,6 +1538,10 @@ function loadHighScore() {
         formattedMsg += `  │  🎯 ${Math.floor(targetHigh)}`;
     }
     highScoreNodes.forEach(node => node.textContent = formattedMsg);
+
+    // Update global best text on Main Menu
+    const bestTextEl = document.getElementById('globalBestTimeText');
+    if (bestTextEl) bestTextEl.textContent = formatTime(timeHigh) + (targetHigh > 0 ? ` / ${Math.floor(targetHigh)} T` : '');
 }
 
 // renderProgressList removed — progress page deleted
@@ -2022,46 +2066,61 @@ function updateBot(dt) {
     if (topDist < margin) forceY += Math.pow(margin / topDist, 2) * wallPush;
     if (bottomDist < margin) forceY -= Math.pow(margin / bottomDist, 2) * wallPush;
 
-    // Extra corner avoidance — diagonal push if in corner zone
-    const cornerMargin = 150;
-    if (leftDist < cornerMargin && topDist < cornerMargin) {
-        forceX += cornerPush; forceY += cornerPush;
-    }
-    if (rightDist < cornerMargin && topDist < cornerMargin) {
-        forceX -= cornerPush; forceY += cornerPush;
-    }
-    if (leftDist < cornerMargin && bottomDist < cornerMargin) {
-        forceX += cornerPush; forceY -= cornerPush;
-    }
-    if (rightDist < cornerMargin && bottomDist < cornerMargin) {
-        forceX -= cornerPush; forceY -= cornerPush;
-    }
-
-    // Threat avoidance — Obstacles AND Projectiles
     let nearbyThreats = 0;
+
+    // AI Configuration scaled exponentially based on bot level
+    const safetyMarginMultiplier = Math.max(0.15, 1.2 - (botLevel * 0.18)); // Bot lebih berani dekat hitbox
+    const predictiveLookahead = 0.3 * (1 + botLevel * 0.4); // Memprediksi titik pertemuan dalam hitungan detik
+
     entities.forEach(entity => {
-        if (entity instanceof Obstacle || entity instanceof Projectile) {
-            // Predictive evasion: look ahead based on velocity
-            const lookAhead = 0.4 * levelSpec.reactFast;
-            const predX = entity.x + (entity.vx || 0) * lookAhead;
-            const predY = entity.y + (entity.vy || 0) * lookAhead;
+        if (entity instanceof Target && !entity.collected) {
+            // Target Hunt Seeking
+            const dx = entity.x - player.x;
+            const dy = entity.y - player.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            // Bot berakselerasi besar ke arah target
+            const targetPull = 1200 + (botLevel * 600);
+            forceX += (dx / dist) * targetPull;
+            forceY += (dy / dist) * targetPull;
+        }
+        else if (entity instanceof Obstacle || entity instanceof Projectile) {
+            const vx = entity.vx || 0;
+            const vy = entity.vy || 0;
+
+            // Predictive evasion: Kalkulasi masa depan target berdasarkan velocity dan akselerasinya
+            const predX = entity.x + vx * predictiveLookahead;
+            const predY = entity.y + vy * predictiveLookahead;
+
             const dx = player.x - predX;
             const dy = player.y - predY;
             const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-            // Braver: smaller effective scan radius (bot allows closer proximity)
-            const effectiveRadius = levelSpec.scanRadius * 0.7;
+            // Semakin tinggi level bot, efektifitas scan radius rintangan ditekan (Lebih dekat rintangan)
+            const effectiveRadius = levelSpec.scanRadius * safetyMarginMultiplier;
+
             if (dist < effectiveRadius) {
                 nearbyThreats++;
-                // Quadratic push instead of cubic (less overreaction)
                 const pushPow = Math.pow(effectiveRadius / dist, 2);
-                const pushStr = (entity instanceof Projectile) ? 600 : 400;
+                const pushStr = (entity instanceof Projectile) ? 800 : 500;
+
+                // Menjauh secara eksponensial
                 forceX += (dx / dist) * pushPow * pushStr;
                 forceY += (dy / dist) * pushPow * pushStr;
+
+                // Dodging presisi silang/tegak lurus terhadap arah hadap objek proyektil (side-step dodge licin)
+                if (botLevel >= 4 && (Math.abs(vx) > 0 || Math.abs(vy) > 0)) {
+                    const vlen = Math.sqrt(vx * vx + vy * vy) || 1;
+                    const perpX = -vy / vlen;
+                    const perpY = vx / vlen;
+                    const dot = (player.x - entity.x) * perpX + (player.y - entity.y) * perpY;
+                    const sideDir = dot > 0 ? 1 : -1;
+                    forceX += perpX * sideDir * pushPow * pushStr * (1.2 + botLevel * 0.2);
+                    forceY += perpY * sideDir * pushPow * pushStr * (1.2 + botLevel * 0.2);
+                }
             }
         } else if (entity instanceof Laser && entity.phase === 'warning') {
             const dist = pointLineDistance(player.x, player.y, entity.x1, entity.y1, entity.x2, entity.y2);
-            if (dist < levelSpec.scanRadius * 1.5) {
+            if (dist < levelSpec.scanRadius * 1.5 * safetyMarginMultiplier) {
                 nearbyThreats++;
                 const ldx = entity.x2 - entity.x1;
                 const ldy = entity.y2 - entity.y1;
@@ -2085,21 +2144,22 @@ function updateBot(dt) {
     });
 
     // Slight panic randomness at low levels
-    if (nearbyThreats > 3) {
-        const panicScale = (6 - botLevel) * 60;
+    if (nearbyThreats > 3 && botLevel < 3) {
+        const panicScale = (4 - botLevel) * 80;
         forceX += (Math.random() - 0.5) * panicScale;
         forceY += (Math.random() - 0.5) * panicScale;
     }
 
-    // Normalize force and calculate target velocity
-    const maxSpeedBase = 900;
-    const botSpeed = maxSpeedBase * levelSpec.speedBoost;
+    // Velocity normalizer
+    const maxSpeedBase = 800;
+    // Semakin ahli bot, batas speed meningkat pesat dan gesit
+    const botSpeed = maxSpeedBase * levelSpec.speedBoost * (1 + (botLevel - 1) * 0.25);
     const forceMag = Math.sqrt(forceX * forceX + forceY * forceY) || 1;
-    const targetVx = (forceX / forceMag) * botSpeed;
-    const targetVy = (forceY / forceMag) * botSpeed;
+    let targetVx = (forceX / forceMag) * botSpeed;
+    let targetVy = (forceY / forceMag) * botSpeed;
 
-    // Smooth acceleration with lerp (not stiff, agile movement)
-    const smoothing = 0.12 * levelSpec.reactFast; // Higher levels react faster
+    // Smooth lerping dengan akselerasi tinggi yang mulus
+    const smoothing = Math.min(1.0, 0.15 * levelSpec.reactFast + (botLevel * 0.08));
     botVx += (targetVx - botVx) * smoothing;
     botVy += (targetVy - botVy) * smoothing;
 

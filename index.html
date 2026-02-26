@@ -137,32 +137,32 @@
 
         <!-- Main Panel (Transparent & Spacious) -->
         <div
-          class="flex-1 relative flex flex-col p-8 lg:p-12 z-10 rounded-3xl border border-white/5 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden custom-scrollbar pointer-events-auto shadow-2xl">
+          class="flex-1 relative flex flex-col p-6 z-10 rounded-3xl border border-white/5 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden custom-scrollbar pointer-events-auto shadow-2xl">
 
           <!-- Background Glow inside Main Panel -->
           <div
-            class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3">
+            class="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3">
           </div>
 
-          <div class="mb-10 relative z-10">
+          <div class="mb-5 relative z-10">
             <h2 id="infoTitle"
-              class="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-white mb-6 tracking-tight drop-shadow-lg"
+              class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4 tracking-tight drop-shadow-lg"
               style="line-height:1.1;">
               Obstacles
             </h2>
             <p id="infoDesc"
-              class="text-xl text-slate-300 font-light leading-relaxed max-w-3xl border-l-4 border-primary/50 pl-6 bg-gradient-to-r from-primary/5 to-transparent py-2">
+              class="text-lg text-slate-300 font-light leading-relaxed max-w-3xl border-l-4 border-primary/50 pl-4 bg-gradient-to-r from-primary/5 to-transparent py-1">
               Pengalaman klasik yang menegangkan. Hindari lingkaran merah yang berjatuhan.
             </p>
           </div>
 
-          <div id="modeStats" class="flex flex-wrap gap-4 mb-10 relative z-10">
+          <div id="modeStats" class="flex flex-wrap gap-4 mb-6 relative z-10">
             <!-- Dynamically populated stats -->
           </div>
 
           <!-- Modul Pencapaian (Hanya terlihat jika bukan Mode Custom) -->
           <div id="modeAchPanel"
-            class="glass-card p-8 rounded-2xl border-t border-white/10 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md mb-10 hidden relative z-10">
+            class="glass-card p-6 rounded-2xl border-t border-white/10 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md mb-6 hidden relative z-10">
             <!-- Dynamically populated by updateModeStatsPanel() -->
           </div>
 
@@ -317,16 +317,16 @@
           </div>
 
           <!-- Start Button Area at Bottom -->
-          <div class="mt-auto pt-8 border-t border-white/10 relative z-10 w-full mt-[5vh]">
+          <div class="mt-auto pt-6 border-t border-white/10 relative z-10 w-full shrink-0">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-6 w-full">
 
               <div id="highScoreContainer"
-                class="flex flex-col items-start bg-black/30 px-6 py-4 rounded-2xl border border-white/5 backdrop-blur-md">
+                class="flex flex-col items-start bg-black/30 px-5 py-3 rounded-xl border border-white/5 backdrop-blur-md min-w-[180px]">
                 <span
-                  class="text-xs font-display tracking-[0.3em] text-slate-400 uppercase mb-1 flex items-center gap-2"><span
-                    class="material-symbols-outlined text-[1rem]">emoji_events</span>Rekor Terbaik</span>
-                <span
-                  class="highScoreDisplay text-4xl font-display font-bold text-white drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]">0,00s</span>
+                  class="text-[0.65rem] font-display tracking-[0.2em] text-slate-400 uppercase mb-1 flex items-center gap-2"><span
+                    class="material-symbols-outlined text-[1rem]">emoji_events</span>Waktu Terbaik</span>
+                <span id="globalBestTimeText"
+                  class="text-3xl font-display font-bold text-white drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]">0,00s</span>
               </div>
 
               <!-- Start Button without bg-black/10 on the inner content -->
@@ -382,15 +382,16 @@
           <div class="flex justify-between items-center mb-2">
             <span class="text-sm font-semibold text-white/90">🤖 Tonton Bot AI Bermain</span>
             <label class="toggle-switch">
-              <input type="checkbox" id="togBot">
+              <input type="checkbox" id="togBotSettings">
               <span class="slider round"></span>
             </label>
           </div>
-          <div id="botLevelContainer" class="bot-level-container hidden-content pt-3 border-t border-white/10 mt-3">
+          <div id="botLevelContainerSettings"
+            class="bot-level-container hidden-content pt-3 border-t border-white/10 mt-3">
             <label class="text-xs text-slate-400 flex justify-between w-full mb-2">
-              Tingkat AI: <span id="valBotLevel" class="text-red-400 font-bold">1 - Noob</span>
+              Tingkat AI: <span id="valBotLevelSettings" class="text-red-400 font-bold">1 - Noob</span>
             </label>
-            <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1" class="w-full">
+            <input type="range" id="rngBotLevelSettings" min="1" max="6" step="1" value="1" class="w-full">
           </div>
         </div>
         <!-- Gameplay -->
@@ -398,7 +399,7 @@
           <div class="flex justify-between items-center">
             <span class="text-sm font-semibold text-white/90">🎯 Target Hunt (Kumpulkan bonus)</span>
             <label class="toggle-switch">
-              <input type="checkbox" id="togTargetHunt" checked>
+              <input type="checkbox" id="togTargetHuntSettings" checked>
               <span class="slider round"></span>
             </label>
           </div>
