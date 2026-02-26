@@ -1738,7 +1738,7 @@ function renderAchievementModal() {
     const overallDiv = document.createElement('div');
     overallDiv.className = 'ach-overall ach-3d-card';
     overallDiv.innerHTML = `
-            < div class="ach-3d-inner" >
+            <div class="ach-3d-inner">
             <div class="ach-overall-header">
                 <span class="ach-trophy">🏆</span>
                 <div class="ach-overall-info">
@@ -1762,8 +1762,8 @@ function renderAchievementModal() {
                     <span class="text-xs font-bold text-yellow-500 w-20 text-right">${overall.avgTarget}% <span class="opacity-50 text-[0.65rem] font-normal">/ 50</span></span>
                 </div>
             </div>
-        </div >
-            `;
+        </div>
+    `;
     content.appendChild(overallDiv);
 
     // Grid for per-mode cards
@@ -1773,13 +1773,13 @@ function renderAchievementModal() {
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
         const stats = getModeAchStats(key);
-        const highTime = parseFloat(localStorage.getItem(`obstacleRushHigh_${key} `)) || 0;
-        const highTarget = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${key} `)) || 0;
+        const highTime = parseFloat(localStorage.getItem(`obstacleRushHigh_${key}`)) || 0;
+        const highTarget = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${key}`)) || 0;
 
         const section = document.createElement('div');
         section.className = 'ach-mode-section ach-3d-card';
         section.innerHTML = `
-            < div class="ach-3d-inner" >
+            <div class="ach-3d-inner">
                 <div class="ach-mode-header">
                     <span class="ach-mode-icon">${mode.icon}</span>
                     <span class="ach-mode-name">${mode.label}</span>
@@ -1812,7 +1812,7 @@ function renderAchievementModal() {
                         <span class="text-[0.65rem] font-bold text-yellow-500 w-16 text-right">${stats.targetPct}% <span class="opacity-50 text-[0.55rem] font-normal">/ 50</span></span>
                     </div>
                 </div>
-            </div >
+            </div>
             `;
         grid.appendChild(section);
     }
@@ -2126,8 +2126,8 @@ function updateBot(dt) {
             const dx = entity.x - player.x;
             const dy = entity.y - player.y;
             const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-            // Bot berakselerasi proporsional (max 400 strength agar tidak override Threat avoidance)
-            const targetPull = Math.min(400, 150 + (botLevel * 50));
+            // Bot berakselerasi proporsional (max 250 agar Threat Avoidance jauh lebih mendominasi)
+            const targetPull = Math.min(250, 100 + (botLevel * 25));
             forceX += (dx / dist) * targetPull;
             forceY += (dy / dist) * targetPull;
         }
@@ -2143,15 +2143,15 @@ function updateBot(dt) {
             const dy = player.y - predY;
             const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-            // Semakin tinggi level bot, efektifitas scan radius rintangan ditekan (Lebih dekat rintangan)
-            const effectiveRadius = levelSpec.scanRadius * safetyMarginMultiplier;
+            // Memperbesar scanning radius bot untuk keselamatan
+            const effectiveRadius = levelSpec.scanRadius * safetyMarginMultiplier * 1.5;
 
             if (dist < effectiveRadius) {
                 nearbyThreats++;
-                const pushPow = Math.pow(effectiveRadius / dist, 2);
-                const pushStr = (entity instanceof Projectile) ? 800 : 500;
+                const pushPow = Math.pow(effectiveRadius / dist, 2.5);
+                const pushStr = (entity instanceof Projectile) ? 1500 : 1000;
 
-                // Menjauh secara eksponensial
+                // Menjauh secara eksponensial (threat avoidance dikuatkan)
                 forceX += (dx / dist) * pushPow * pushStr;
                 forceY += (dy / dist) * pushPow * pushStr;
 
@@ -2162,11 +2162,12 @@ function updateBot(dt) {
                     const perpY = vx / vlen;
                     const dot = (player.x - entity.x) * perpX + (player.y - entity.y) * perpY;
                     const sideDir = dot > 0 ? 1 : -1;
-                    forceX += perpX * sideDir * pushPow * pushStr * (1.2 + botLevel * 0.2);
-                    forceY += perpY * sideDir * pushPow * pushStr * (1.2 + botLevel * 0.2);
+                    forceX += perpX * sideDir * pushPow * pushStr * (1.2 + botLevel * 0.3);
+                    forceY += perpY * sideDir * pushPow * pushStr * (1.2 + botLevel * 0.3);
                 }
             }
-        } else if (entity instanceof Laser && entity.phase === 'warning') {
+        }
+        else if (entity instanceof Laser && entity.phase === 'warning') {
             const dist = pointLineDistance(player.x, player.y, entity.x1, entity.y1, entity.x2, entity.y2);
             if (dist < levelSpec.scanRadius * 1.5 * safetyMarginMultiplier) {
                 nearbyThreats++;
@@ -2199,9 +2200,9 @@ function updateBot(dt) {
     }
 
     // Velocity normalizer
-    const maxSpeedBase = 800;
-    // Semakin ahli bot, batas speed meningkat pesat dan gesit
-    const botSpeed = maxSpeedBase * levelSpec.speedBoost * (1 + (botLevel - 1) * 0.25);
+    const maxSpeedBase = 500;
+    // Meningkatkan speed tapi diredam sedikit untuk menstabilkan kontrol di High Level
+    const botSpeed = maxSpeedBase * levelSpec.speedBoost * (1 + (botLevel - 1) * 0.15);
     const forceMag = Math.sqrt(forceX * forceX + forceY * forceY) || 1;
     let targetVx = (forceX / forceMag) * botSpeed;
     let targetVy = (forceY / forceMag) * botSpeed;
@@ -2236,6 +2237,9 @@ function initSliders() {
 initSliders();
 
 // Real-time synchronization for main menu stats
+let lastStatsHash = '';
+let lastOverallHash = '';
+
 setInterval(() => {
     if (gameState === 'menu' && currentMode !== 'custom') {
         const bestTextEl = document.getElementById('globalBestTimeText');
@@ -2252,6 +2256,22 @@ setInterval(() => {
             if (bestTargetEl.textContent !== tgtStr) {
                 bestTargetEl.textContent = tgtStr;
             }
+        }
+
+        // Cache check for mode stats
+        const curModeStats = getModeAchStats(currentMode);
+        const modeHash = `${currentMode}_${curModeStats.combinedPct}_${curModeStats.timePct}_${curModeStats.targetPct}`;
+        if (modeHash !== lastStatsHash) {
+            lastStatsHash = modeHash;
+            updateModeStatsPanel(currentMode);
+        }
+
+        // Cache check for overall progress
+        const overall = getOverallAchStats();
+        const overallHash = `${overall.avgCombined}`;
+        if (overallHash !== lastOverallHash) {
+            lastOverallHash = overallHash;
+            updateHeaderProgress();
         }
     }
 }, 500);
@@ -2282,7 +2302,7 @@ function renderModeList(activeKey) {
 
         let gridCols = catName === 'Tantangan' ? 'grid-cols-2' : 'grid-cols-1';
 
-        html += `< div class="space-y-3" >
+        html += `<div class="space-y-3">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">${catName}</h3>
             <div class="grid ${gridCols} gap-3">`;
 
@@ -2324,7 +2344,7 @@ function renderModeList(activeKey) {
             }
         });
 
-        html += `</div ></div > `;
+        html += `</div></div>`;
     }
 
     document.getElementById('modeList').innerHTML = html;

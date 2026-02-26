@@ -2283,7 +2283,8 @@ input[type="range"]::-moz-range-thumb {
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
+  width: calc(100% - 24px);
+  margin: 0 12px;
   height: 4px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
