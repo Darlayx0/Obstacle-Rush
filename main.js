@@ -1375,6 +1375,36 @@ function gameOver() {
     gameOverMenu.classList.remove('hidden');
 }
 
+function updateHeaderProgress() {
+    const el = document.getElementById('headerProgress');
+    if (!el) return;
+
+    // Calculate total progress
+    const overall = getOverallAchStats();
+    const pct = parseFloat(overall.avgCombined) || 0;
+
+    // We want the SVG circle and percentage
+    el.innerHTML = `
+        <div class="flex items-center gap-3">
+            <span class="text-xs font-display tracking-widest text-slate-400 uppercase">PROGRES</span>
+            <div class="relative w-10 h-10">
+                <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <!-- Background Circle -->
+                    <path class="text-white/10" stroke-width="3" stroke="currentColor" fill="none"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <!-- Progress Circle -->
+                    <path class="text-primary drop-shadow-[0_0_5px_rgba(56,189,248,0.8)]" stroke-dasharray="${pct}, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[0.6rem] font-bold text-white">${pct}%</span>
+                </div>
+            </div>
+        </div>
+    `;
+    el.classList.remove('hidden');
+}
+
 function showMainMenu() {
     document.body.className = 'bg-menu';
     gameState = 'menu';
@@ -1400,6 +1430,7 @@ function showMainMenu() {
         loadHighScore();
         updateModeStatsPanel(currentMode);
     }
+    updateHeaderProgress();
     drawBackground();
 }
 
@@ -1734,36 +1765,7 @@ function gameLoop(currentTime) {
     drawCinematicBackground(safeDt);
     drawBackground();
 
-    // ================= MAIN MENU BACKGROUND ANIMATION =================
-    if (gameState === 'menu') {
-        // Slow trickle of random entities to populate background
-        obsSpawnTimer += safeDt;
-        lasSpawnTimer += safeDt;
-        proSpawnTimer += safeDt;
-
-        if (obsSpawnTimer >= 1.5 && Math.random() < 0.5) {
-            const obs = new Obstacle();
-            // Slow them down slightly for menu
-            obs.vx *= 0.5;
-            obs.vy *= 0.5;
-            entities.push(obs);
-            obsSpawnTimer = 0;
-        }
-
-        if (lasSpawnTimer >= 3.0 && Math.random() < 0.3) {
-            entities.push(new Laser());
-            lasSpawnTimer = 0;
-        }
-
-        if (proSpawnTimer >= 2.0 && Math.random() < 0.4) {
-            const pro = new Projectile();
-            // Menu projectiles should mostly just float across the screen
-            pro.vx *= 0.6;
-            pro.vy *= 0.6;
-            entities.push(pro);
-            proSpawnTimer = 0;
-        }
-    }
+    // Entities are no longer spawned during the menu to keep the background clean.
     // ==================================================================
 
     // ================= MAIN PLAYING LOGIC =================
@@ -2107,11 +2109,7 @@ function initSliders() {
 }
 initSliders();
 
-// Start background animation on load
-document.body.className = 'bg-menu';
-gameState = 'menu';
-lastTime = performance.now();
-animationId = requestAnimationFrame(gameLoop);
+// The background animation already starts in init() via showMainMenu().
 
 function renderModeList(activeKey) {
     let html = '';
