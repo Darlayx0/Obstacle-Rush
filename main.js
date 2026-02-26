@@ -1386,12 +1386,31 @@ function gameOver() {
     const newTimeBest = parseFloat(localStorage.getItem(getStoreKey())) || 0;
     const newTargetBest = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${currentMode}`)) || 0;
 
+    // Helper untuk animasi counting up
+    function animateValue(obj, start, end, duration, formatFn) {
+        if (!obj) return;
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const current = start + progress * (end - start);
+            obj.textContent = formatFn(current);
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else {
+                obj.textContent = formatFn(end);
+            }
+        };
+        requestAnimationFrame(step);
+    }
+
     // Time stat card
     const goTimeVal = document.getElementById('goTimeValue');
     const goTimeBest = document.getElementById('goTimeBest');
     const goTimeDelta = document.getElementById('goTimeDelta');
-    if (goTimeVal) goTimeVal.textContent = formatTime(timeSurvived);
+    if (goTimeVal) animateValue(goTimeVal, 0, timeSurvived, 1500, formatTime);
     if (goTimeBest) goTimeBest.textContent = `Terbaik: ${formatTime(newTimeBest)}`;
+
     if (goTimeDelta) {
         if (timeSurvived > prevTimeBest && prevTimeBest > 0) {
             goTimeDelta.textContent = `+${formatTime(timeSurvived - prevTimeBest)} \u2B06`;
@@ -1411,7 +1430,7 @@ function gameOver() {
     const goTargetVal = document.getElementById('goTargetValue');
     const goTargetBest = document.getElementById('goTargetBest');
     const goTargetDelta = document.getElementById('goTargetDelta');
-    if (goTargetVal) goTargetVal.textContent = targetScore;
+    if (goTargetVal) animateValue(goTargetVal, 0, targetScore, 1000, Math.floor);
     if (goTargetBest) goTargetBest.textContent = `Terbaik: ${Math.floor(newTargetBest)}`;
     if (goTargetDelta) {
         if (targetHuntEnabled && targetScore > prevTargetBest && prevTargetBest > 0) {
@@ -1663,20 +1682,45 @@ function updateGameOverProgress() {
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-semibold text-white/80 w-16">⏱️ Waktu</span>
                     <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden relative border border-white/10 shadow-inner">
-                        <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-primary to-blue-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)] transition-all duration-1000" style="width:${stats.timePct}%"></div>
+                        <div id="goTimeBarFill" class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-primary to-blue-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)] transition-all ease-out" style="width:0%; transition-duration: 1.5s;"></div>
                     </div>
-                    <span class="text-xs font-bold text-primary w-10 text-right">${stats.timePct}%</span>
+                    <span id="goTimeBarPct" class="text-xs font-bold text-primary w-10 text-right">0%</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-semibold text-white/80 w-16">🎯 Target</span>
                     <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden relative border border-white/10 shadow-inner">
-                        <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-1000" style="width:${stats.targetPct}%"></div>
+                        <div id="goTargetBarFill" class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all ease-out" style="width:0%; transition-duration: 1.5s;"></div>
                     </div>
-                    <span class="text-xs font-bold text-yellow-500 w-10 text-right">${stats.targetPct}%</span>
+                    <span id="goTargetBarPct" class="text-xs font-bold text-yellow-500 w-10 text-right">0%</span>
                 </div>
             </div>
         </div>
     `;
+
+    setTimeout(() => {
+        const timeBar = document.getElementById('goTimeBarFill');
+        const targetBar = document.getElementById('goTargetBarFill');
+        if (timeBar) timeBar.style.width = `${stats.timePct}%`;
+        if (targetBar) targetBar.style.width = `${stats.targetPct}%`;
+
+        function animateValue(obj, start, end, duration, formatFn) {
+            if (!obj) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.textContent = formatFn(start + progress * (end - start));
+                if (progress < 1) requestAnimationFrame(step);
+                else obj.textContent = formatFn(end);
+            };
+            requestAnimationFrame(step);
+        }
+
+        const timePctEl = document.getElementById('goTimeBarPct');
+        const targetPctEl = document.getElementById('goTargetBarPct');
+        if (timePctEl) animateValue(timePctEl, 0, stats.timePct, 1500, (v) => Math.floor(v) + '%');
+        if (targetPctEl) animateValue(targetPctEl, 0, stats.targetPct, 1500, (v) => Math.floor(v) + '%');
+    }, 50);
 }
 
 function renderAchievementModal() {
@@ -1694,7 +1738,7 @@ function renderAchievementModal() {
     const overallDiv = document.createElement('div');
     overallDiv.className = 'ach-overall ach-3d-card';
     overallDiv.innerHTML = `
-        <div class="ach-3d-inner">
+            < div class="ach-3d-inner" >
             <div class="ach-overall-header">
                 <span class="ach-trophy">🏆</span>
                 <div class="ach-overall-info">
@@ -1718,8 +1762,8 @@ function renderAchievementModal() {
                     <span class="text-xs font-bold text-yellow-500 w-20 text-right">${overall.avgTarget}% <span class="opacity-50 text-[0.65rem] font-normal">/ 50</span></span>
                 </div>
             </div>
-        </div>
-    `;
+        </div >
+            `;
     content.appendChild(overallDiv);
 
     // Grid for per-mode cards
@@ -1729,13 +1773,13 @@ function renderAchievementModal() {
     for (const [key, mode] of Object.entries(MODES)) {
         if (!mode.saveScore) continue;
         const stats = getModeAchStats(key);
-        const highTime = parseFloat(localStorage.getItem(`obstacleRushHigh_${key}`)) || 0;
-        const highTarget = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${key}`)) || 0;
+        const highTime = parseFloat(localStorage.getItem(`obstacleRushHigh_${key} `)) || 0;
+        const highTarget = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${key} `)) || 0;
 
         const section = document.createElement('div');
         section.className = 'ach-mode-section ach-3d-card';
         section.innerHTML = `
-            <div class="ach-3d-inner">
+            < div class="ach-3d-inner" >
                 <div class="ach-mode-header">
                     <span class="ach-mode-icon">${mode.icon}</span>
                     <span class="ach-mode-name">${mode.label}</span>
@@ -1768,8 +1812,8 @@ function renderAchievementModal() {
                         <span class="text-[0.65rem] font-bold text-yellow-500 w-16 text-right">${stats.targetPct}% <span class="opacity-50 text-[0.55rem] font-normal">/ 50</span></span>
                     </div>
                 </div>
-            </div>
-        `;
+            </div >
+            `;
         grid.appendChild(section);
     }
     content.appendChild(grid);
@@ -2053,14 +2097,8 @@ function updateBot(dt) {
     let forceX = 0;
     let forceY = 0;
 
-    // Strong pull towards center (keeps bot playing in center area)
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const distCenter = Math.sqrt(Math.pow(centerX - player.x, 2) + Math.pow(centerY - player.y, 2)) || 1;
-    const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-    const centerPull = 150 + (distCenter / maxDist) * 200; // Stronger pull when further from center
-    forceX += ((centerX - player.x) / distCenter) * centerPull;
-    forceY += ((centerY - player.y) / distCenter) * centerPull;
+    // Center pull dihapus sepenuhnya agar bot bebas bermanuver di seluruh area
+    // tanpa paksaan kembali ke tengah secara brutal yang kerap memicu tabrakan beruntun.
 
     // Wall repulsion (strong exponential push away from edges AND corners)
     const margin = 80;
@@ -2188,7 +2226,7 @@ function initSliders() {
         const max = parseFloat(slider.max) || 100;
         const val = parseFloat(slider.value) || 0;
         const pct = ((val - min) / (max - min)) * 100;
-        slider.style.setProperty('--slider-pct', `${pct}%`);
+        slider.style.setProperty('--slider-pct', `${pct}% `);
     }
     sliders.forEach(slider => {
         updateSlider(slider);
@@ -2196,6 +2234,27 @@ function initSliders() {
     });
 }
 initSliders();
+
+// Real-time synchronization for main menu stats
+setInterval(() => {
+    if (gameState === 'menu' && currentMode !== 'custom') {
+        const bestTextEl = document.getElementById('globalBestTimeText');
+        const bestTargetEl = document.getElementById('globalBestTargetText');
+
+        const timeHigh = parseFloat(localStorage.getItem(getStoreKey())) || 0;
+        const targetHigh = parseFloat(localStorage.getItem(`obstacleRushHighTarget_${currentMode}`)) || 0;
+
+        if (bestTextEl && bestTextEl.textContent !== formatTime(timeHigh)) {
+            bestTextEl.textContent = formatTime(timeHigh);
+        }
+        if (bestTargetEl) {
+            const tgtStr = targetHigh > 0 ? `${Math.floor(targetHigh)} T` : '0 T';
+            if (bestTargetEl.textContent !== tgtStr) {
+                bestTargetEl.textContent = tgtStr;
+            }
+        }
+    }
+}, 500);
 
 // The background animation already starts in init() via showMainMenu().
 
@@ -2223,7 +2282,7 @@ function renderModeList(activeKey) {
 
         let gridCols = catName === 'Tantangan' ? 'grid-cols-2' : 'grid-cols-1';
 
-        html += `<div class="space-y-3">
+        html += `< div class="space-y-3" >
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">${catName}</h3>
             <div class="grid ${gridCols} gap-3">`;
 
@@ -2265,7 +2324,7 @@ function renderModeList(activeKey) {
             }
         });
 
-        html += `</div></div>`;
+        html += `</div ></div > `;
     }
 
     document.getElementById('modeList').innerHTML = html;

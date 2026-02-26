@@ -124,10 +124,11 @@
 
         <!-- Sidebar (Mode List) -->
         <div
-          class="w-full md:w-[350px] lg:w-[400px] flex flex-col glass-card border border-white/10 rounded-3xl overflow-hidden shrink-0 pointer-events-auto bg-black/30 backdrop-blur-md shadow-2xl">
-          <div class="p-6 border-b border-white/5 bg-gradient-to-b from-white/10 to-transparent">
-            <h2 class="text-xl font-display font-bold tracking-widest uppercase text-white drop-shadow">Pilih Mode</h2>
-            <p class="text-sm font-body text-slate-400 mt-1">Sistem Navigasi Orbital</p>
+          class="w-full md:w-[350px] lg:w-[400px] flex flex-col border border-white/5 rounded-3xl overflow-hidden shrink-0 pointer-events-auto bg-white/[0.01] backdrop-blur-2xl shadow-[0_0_40px_rgba(0,212,255,0.05)]">
+          <div class="p-6 border-b border-white/5 bg-gradient-to-b from-white/[0.05] to-transparent">
+            <h2 class="text-xl font-display font-bold tracking-widest uppercase text-white drop-shadow-lg">Pilih Mode
+            </h2>
+            <p class="text-xs font-display tracking-widest text-primary/70 mt-1 uppercase">Sistem Navigasi Orbital</p>
           </div>
 
           <div class="flex-1 overflow-y-auto px-6 pb-6 pt-6 space-y-8 custom-scrollbar" id="modeList">
@@ -260,18 +261,34 @@
                         id="valProSpawn" class="text-primary">0.70s</span></label><input type="range" id="rngProSpawn"
                       min="0.10" max="5.00" step="0.01" value="0.7" class="w-full"></div>
                   <div class="mt-2">
-                    <label class="block mb-2">Jenis Proyektil Aktif:</label>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                      <label><input type="checkbox" id="chkBullet" checked> <span
-                          style="color:#f87171;">Bullet</span></label>
-                      <label><input type="checkbox" id="chkHoming" checked> <span
-                          style="color:#fbbf24;">Homing</span></label>
-                      <label><input type="checkbox" id="chkShotgun" checked> <span
-                          style="color:#f87171;">Shotgun</span></label>
-                      <label><input type="checkbox" id="chkWave" checked> <span
-                          style="color:#a78bfa;">Wave</span></label>
-                      <label><input type="checkbox" id="chkSniper" checked> <span
-                          style="color:#34d399;">Sniper</span></label>
+                    <label class="block mb-3 font-bold text-white/80 uppercase tracking-widest text-[0.65rem]">Jenis
+                      Proyektil Aktif:</label>
+                    <div class="grid grid-cols-2 gap-3 mt-1">
+                      <label class="cyber-check-label">
+                        <input type="checkbox" id="chkBullet" checked>
+                        <div class="cyber-box"></div>
+                        <span style="color:#fca5a5; font-weight:600; letter-spacing:0.05em;">Bullet</span>
+                      </label>
+                      <label class="cyber-check-label">
+                        <input type="checkbox" id="chkHoming" checked>
+                        <div class="cyber-box"></div>
+                        <span style="color:#fcd34d; font-weight:600; letter-spacing:0.05em;">Homing</span>
+                      </label>
+                      <label class="cyber-check-label">
+                        <input type="checkbox" id="chkShotgun" checked>
+                        <div class="cyber-box"></div>
+                        <span style="color:#fca5a5; font-weight:600; letter-spacing:0.05em;">Shotgun</span>
+                      </label>
+                      <label class="cyber-check-label">
+                        <input type="checkbox" id="chkWave" checked>
+                        <div class="cyber-box"></div>
+                        <span style="color:#c4b5fd; font-weight:600; letter-spacing:0.05em;">Wave</span>
+                      </label>
+                      <label class="cyber-check-label">
+                        <input type="checkbox" id="chkSniper" checked>
+                        <div class="cyber-box"></div>
+                        <span style="color:#6ee7b7; font-weight:600; letter-spacing:0.05em;">Sniper</span>
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -376,7 +393,12 @@
     <div id="achievementModal"
       class="menu-panel glassmorphism hidden flex flex-col items-center justify-center gap-6 p-10 min-w-[600px] max-w-[95vw] w-[1200px]"
       style="max-height: 90vh; overflow-y: auto;">
-      <h2 class="title" style="margin-bottom: 0px; font-size: 2rem;">🏆 <span class="accent">Pencapaian</span></h2>
+      <h2
+        class="text-4xl font-display font-bold tracking-widest drop-shadow-md mb-2 uppercase text-white flex items-center gap-3">
+        <span
+          class="material-symbols-outlined text-4xl text-primary drop-shadow-[0_0_12px_rgba(56,189,248,0.8)]">emoji_events</span>
+        PENCAPAIAN
+      </h2>
       <div id="achievementContent" class="achievement-list w-full">
         <!-- Dynamically populated by renderAchievementModal -->
       </div>
@@ -393,7 +415,11 @@
 
     <!-- Settings Modal -->
     <div id="settingsModal" class="menu-panel glassmorphism hidden flex flex-col gap-6 p-10 min-w-[420px] max-w-[95vw]">
-      <h2 class="title text-center" style="font-size: 2rem;">⚙️ <span class="accent">Pengaturan</span></h2>
+      <h2
+        class="text-4xl text-center font-display font-bold tracking-widest drop-shadow-md mb-2 uppercase text-white flex items-center justify-center gap-3">
+        <span class="material-symbols-outlined text-4xl text-slate-300">settings</span>
+        PENGATURAN
+      </h2>
       <div class="settings-list flex flex-col gap-4 w-full">
         <!-- Bot AI -->
         <div class="settings-item bg-black/30 p-4 rounded-xl border border-white/5">
