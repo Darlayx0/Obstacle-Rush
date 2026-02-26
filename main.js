@@ -831,9 +831,20 @@ function init() {
     }
 
     // Listen to custom ranges
+    const updateSliderBg = (el) => {
+        if (el.id === 'rngBotLevel') return; // Handled separately
+        const val = parseFloat(el.value) || 0;
+        const min = parseFloat(el.min) || 0;
+        const max = parseFloat(el.max) || 100;
+        const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+        el.style.setProperty('--slider-bg', `linear-gradient(90deg, #06b6d4 ${pct}%, rgba(255,255,255,0.05) ${pct}%)`);
+    };
+
     const syncVal = (el, valNode, suffix = '') => {
+        if (el) updateSliderBg(el);
         el.addEventListener('input', (e) => {
-            valNode.textContent = e.target.value + suffix;
+            if (valNode) valNode.textContent = e.target.value + suffix;
+            updateSliderBg(e.target);
         });
     };
     syncVal(rngObsSpawn, valObsSpawn, 's');
@@ -881,7 +892,11 @@ function init() {
         const v = parseInt(e.target.value) / 100;
         sfx.setVolume(v);
         valVolume.textContent = e.target.value + '%';
+        updateSliderBg(e.target);
     });
+    // Init volume slider bg
+    updateSliderBg(rngVolume);
+
     document.getElementById('resetAllDataBtn').addEventListener('click', async () => {
         sfx.play('click');
         const ok = await gameConfirm(
@@ -968,8 +983,11 @@ function setMode(modeKey) {
 function updateModeStatsPanel(modeKey) {
     const panel = document.getElementById('modeAchPanel');
     if (!panel) return;
-    if (modeKey === 'custom') { panel.style.display = 'none'; return; }
-    panel.style.display = '';
+    if (modeKey === 'custom') {
+        panel.classList.add('hidden');
+        return;
+    }
+    panel.classList.remove('hidden');
     const stats = getModeAchStats(modeKey);
 
     panel.innerHTML = `
@@ -989,8 +1007,8 @@ function updateModeStatsPanel(modeKey) {
                     </div>
                 </div>
                 <div class="text-center">
-                    <div class="text-xs font-display uppercase tracking-widest text-slate-500">Waktu</div>
-                    <div class="text-xs text-slate-400">Target: 300s</div>
+                    <div class="text-xs font-display uppercase tracking-widest text-slate-500 mb-1">Waktu</div>
+                    <div class="text-xs text-white p-1 px-2 bg-black/30 rounded border border-white/10">Best: ${formatTime(stats.bestTime)}</div>
                 </div>
             </div>
             
@@ -1005,8 +1023,8 @@ function updateModeStatsPanel(modeKey) {
                     </div>
                 </div>
                 <div class="text-center">
-                    <div class="text-xs font-display uppercase tracking-widest text-slate-500">Target</div>
-                    <div class="text-xs text-slate-400">Target: 50</div>
+                    <div class="text-xs font-display uppercase tracking-widest text-slate-500 mb-1">Target</div>
+                    <div class="text-xs text-white p-1 px-2 bg-black/30 rounded border border-white/10">Best: ${Math.floor(stats.bestTarget)}</div>
                 </div>
             </div>
             

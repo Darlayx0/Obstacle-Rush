@@ -355,93 +355,87 @@
     </div>
 
     <!-- Achievement Modal -->
-    <div id="achievementModal" class="menu-panel glassmorphism hidden">
-      <div class="modal-content glassmorphism" onclick="event.stopPropagation()"
-        style="max-width: 1200px; padding: 32px 40px; width: 95vw;">
-        <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">🏆 <span class="accent">Pencapaian</span></h2>
-        <div id="achievementContent" class="achievement-list">
-          <!-- Dynamically populated by renderAchievementModal -->
-        </div>
-        <div
-          style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
-          <button id="closeAchievementBtn"
-            class="group relative px-8 h-12 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900">
-            <div class="relative h-full flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined text-white text-sm">close</span>
-              <span class="font-display font-semibold tracking-widest text-white uppercase text-sm">Tutup</span>
-            </div>
-          </button>
-        </div>
+    <div id="achievementModal"
+      class="menu-panel glassmorphism hidden flex flex-col items-center justify-center gap-6 p-10 min-w-[600px] max-w-[95vw] w-[1200px]"
+      style="max-height: 90vh; overflow-y: auto;">
+      <h2 class="title" style="margin-bottom: 0px; font-size: 2rem;">🏆 <span class="accent">Pencapaian</span></h2>
+      <div id="achievementContent" class="achievement-list w-full">
+        <!-- Dynamically populated by renderAchievementModal -->
+      </div>
+      <div class="mt-4 pt-4 border-t border-white/10 w-full flex justify-end">
+        <button id="closeAchievementBtn"
+          class="group relative px-8 h-12 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900 pointer-events-auto">
+          <div class="relative h-full flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-white text-sm">close</span>
+            <span class="font-display font-semibold tracking-widest text-white uppercase text-sm">Tutup</span>
+          </div>
+        </button>
       </div>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="menu-panel glassmorphism hidden">
-      <div class="modal-content glassmorphism" onclick="event.stopPropagation()" style="max-width: 420px;">
-        <h2 class="title" style="margin-bottom: 24px; font-size: 2rem;">⚙️ <span class="accent">Pengaturan</span></h2>
-        <div class="settings-list">
-          <!-- Bot AI -->
-          <div class="settings-item">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="settings-label">🤖 Tonton Bot AI Bermain</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="togBot">
-                <span class="slider round"></span>
-              </label>
-            </div>
-            <div id="botLevelContainer" class="bot-level-container hidden-content"
-              style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
-              <label
-                style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; width: 100%;">Tingkat
-                AI: <span id="valBotLevel" class="val-badge bot-badge" style="padding: 2px 6px; font-size: 0.7rem;">1 -
-                  Noob</span></label>
-              <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1">
-            </div>
+    <div id="settingsModal" class="menu-panel glassmorphism hidden flex flex-col gap-6 p-10 min-w-[420px] max-w-[95vw]">
+      <h2 class="title text-center" style="font-size: 2rem;">⚙️ <span class="accent">Pengaturan</span></h2>
+      <div class="settings-list flex flex-col gap-4 w-full">
+        <!-- Bot AI -->
+        <div class="settings-item bg-black/30 p-4 rounded-xl border border-white/5">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-semibold text-white/90">🤖 Tonton Bot AI Bermain</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="togBot">
+              <span class="slider round"></span>
+            </label>
           </div>
-          <!-- Gameplay -->
-          <div class="settings-item">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="settings-label">🎯 Target Hunt (Kumpulkan skor bonus)</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="togTargetHunt" checked>
-                <span class="slider round"></span>
-              </label>
-            </div>
-          </div>
-          <!-- Sound -->
-          <div class="settings-item">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="settings-label">🔊 Efek Suara</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="togSound" checked>
-                <span class="slider round"></span>
-              </label>
-            </div>
-          </div>
-          <div class="settings-item" id="volumeContainer">
-            <label class="settings-label" style="display: flex; justify-content: space-between; width: 100%;">🔉 Volume
-              <span id="valVolume" class="val-badge">80%</span></label>
-            <input type="range" id="rngVolume" min="0" max="100" step="5" value="80">
-          </div>
-          <!-- Danger Zone -->
-          <div class="settings-item settings-danger-zone">
-            <span class="settings-label" style="color: var(--accent-red);">⚠️ Zona Bahaya</span>
-            <button id="resetAllDataBtn" class="danger-btn" style="width: 100%; margin-top: 8px;">🔥 Hapus Semua
-              Data</button>
-            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 6px;">Menghapus semua progres,
-              pencapaian, dan high score.</p>
+          <div id="botLevelContainer" class="bot-level-container hidden-content pt-3 border-t border-white/10 mt-3">
+            <label class="text-xs text-slate-400 flex justify-between w-full mb-2">
+              Tingkat AI: <span id="valBotLevel" class="text-red-400 font-bold">1 - Noob</span>
+            </label>
+            <input type="range" id="rngBotLevel" min="1" max="6" step="1" value="1" class="w-full">
           </div>
         </div>
-        <div
-          style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
-          <button id="closeSettingsBtn"
-            class="group relative px-8 h-12 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900">
-            <div class="relative h-full flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined text-white text-sm">close</span>
-              <span class="font-display font-semibold tracking-widest text-white uppercase text-sm">Tutup</span>
-            </div>
-          </button>
+        <!-- Gameplay -->
+        <div class="settings-item bg-black/30 p-4 rounded-xl border border-white/5">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-semibold text-white/90">🎯 Target Hunt (Kumpulkan bonus)</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="togTargetHunt" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
         </div>
+        <!-- Sound -->
+        <div class="settings-item bg-black/30 p-4 rounded-xl border border-white/5">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-semibold text-white/90">🔊 Efek Suara</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="togSound" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div id="volumeContainer" class="pt-3 border-t border-white/10 mt-3">
+            <label class="text-xs text-slate-400 flex justify-between w-full mb-2">
+              Volume Audio: <span id="valVolume" class="text-primary font-bold">80%</span>
+            </label>
+            <input type="range" id="rngVolume" min="0" max="100" step="5" value="80" class="w-full">
+          </div>
+        </div>
+        <!-- Danger Zone -->
+        <div class="settings-item bg-red-950/40 p-4 rounded-xl border border-red-500/20">
+          <span class="text-sm font-bold text-red-500 mb-2 block">⚠️ Zona Bahaya</span>
+          <button id="resetAllDataBtn"
+            class="w-full py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg text-sm font-bold transition-colors">🔥
+            Hapus Semua Data</button>
+          <p class="text-[0.65rem] text-slate-400 mt-2 text-center">Menghapus progres, pencapaian, dan high score.</p>
+        </div>
+      </div>
+      <div class="mt-2 pt-4 border-t border-white/10 w-full flex justify-end">
+        <button id="closeSettingsBtn"
+          class="group relative px-8 h-12 rounded-full overflow-hidden transition-all hover:scale-[1.02] border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900 pointer-events-auto">
+          <div class="relative h-full flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-white text-sm">close</span>
+            <span class="font-display font-semibold tracking-widest text-white uppercase text-sm">Tutup</span>
+          </div>
+        </button>
       </div>
     </div>
 
