@@ -320,13 +320,31 @@
           <div class="mt-auto pt-6 border-t border-white/10 relative z-10 w-full shrink-0">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-6 w-full">
 
-              <div id="highScoreContainer"
-                class="flex flex-col items-start bg-black/30 px-5 py-3 rounded-xl border border-white/5 backdrop-blur-md min-w-[180px]">
-                <span
-                  class="text-[0.65rem] font-display tracking-[0.2em] text-slate-400 uppercase mb-1 flex items-center gap-2"><span
-                    class="material-symbols-outlined text-[1rem]">emoji_events</span>Waktu Terbaik</span>
-                <span id="globalBestTimeText"
-                  class="text-3xl font-display font-bold text-white drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]">0,00s</span>
+              <div class="flex gap-4">
+                <div id="highScoreTimeContainer"
+                  class="flex flex-col items-start bg-black/40 px-4 py-2 rounded-xl border border-white/5 backdrop-blur-md min-w-[130px] shadow-[0_4px_15px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent pointer-events-none group-hover:from-primary/20 transition-colors">
+                  </div>
+                  <span
+                    class="text-[0.6rem] font-display tracking-[0.2em] text-slate-400 uppercase mb-1 flex items-center gap-1 z-10"><span
+                      class="material-symbols-outlined text-[0.9rem] text-primary">timer</span>Waktu Terbaik</span>
+                  <span id="globalBestTimeText"
+                    class="text-2xl font-display font-bold text-white drop-shadow-[0_0_10px_rgba(56,189,248,0.5)] z-10">0,00s</span>
+                </div>
+                <!-- Target Box -->
+                <div id="highScoreTargetContainer"
+                  class="flex flex-col items-start bg-black/40 px-4 py-2 rounded-xl border border-white/5 backdrop-blur-md min-w-[130px] shadow-[0_4px_15px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-transparent pointer-events-none group-hover:from-yellow-500/20 transition-colors">
+                  </div>
+                  <span
+                    class="text-[0.6rem] font-display tracking-[0.2em] text-slate-400 uppercase mb-1 flex items-center gap-1 z-10"><span
+                      class="material-symbols-outlined text-[0.9rem] text-yellow-500">track_changes</span>Target
+                    Maks</span>
+                  <span id="globalBestTargetText"
+                    class="text-2xl font-display font-bold text-white drop-shadow-[0_0_10px_rgba(234,179,8,0.5)] z-10">0</span>
+                </div>
               </div>
 
               <!-- Start Button without bg-black/10 on the inner content -->

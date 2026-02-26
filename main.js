@@ -311,8 +311,12 @@ class Player {
             const dg = ctx.createRadialGradient(this.x - this.radius * 0.3, this.y - this.radius * 0.3, 0, this.x, this.y, this.radius);
             dg.addColorStop(0, '#ff8a8a'); dg.addColorStop(0.5, '#ef4444'); dg.addColorStop(1, '#991b1b');
             ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = dg; ctx.shadowBlur = 12; ctx.shadowColor = '#ef4444'; ctx.fill();
-            ctx.shadowBlur = 0; ctx.restore();
+            ctx.fillStyle = dg;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(239, 68, 68, 0.6)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.restore();
             return;
         }
 
@@ -435,8 +439,8 @@ class Projectile {
             const perpX = -Math.sin(this.angle);
             const perpY = Math.cos(this.angle);
             const waveOffset = Math.sin(this.waveTimer * 6) * 120 * dt;
-            this.x += perpX * wave;
-            this.y += perpY * wave;
+            this.x += perpX * waveOffset;
+            this.y += perpY * waveOffset;
         }
     }
 
@@ -806,10 +810,12 @@ function init() {
         if (togS) togS.checked = isBotPlaying;
         if (e.target.checked) {
             botLevelContainer.classList.remove('hidden-content');
-            document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
+            const bt = document.querySelector('#startBtn .font-display');
+            if (bt) bt.innerHTML = 'BOT BERMAIN';
         } else {
             botLevelContainer.classList.add('hidden-content');
-            document.getElementById('startBtn').innerHTML = 'MAIN SEKARANG <span class="arrow">→</span>';
+            const bt = document.querySelector('#startBtn .font-display');
+            if (bt) bt.innerHTML = 'MAIN SEKARANG';
         }
     });
 
@@ -882,10 +888,12 @@ function init() {
             togBot.checked = isBotPlaying; // Sync Custom
             if (e.target.checked) {
                 botLevelContainerSettings.classList.remove('hidden-content');
-                document.getElementById('startBtn').innerHTML = 'LIHAT BOT BERMAIN <span class="arrow">→</span>';
+                const bt = document.querySelector('#startBtn .font-display');
+                if (bt) bt.innerHTML = 'BOT BERMAIN';
             } else {
                 botLevelContainerSettings.classList.add('hidden-content');
-                document.getElementById('startBtn').innerHTML = 'MAIN SEKARANG <span class="arrow">→</span>';
+                const bt = document.querySelector('#startBtn .font-display');
+                if (bt) bt.innerHTML = 'MAIN SEKARANG';
             }
         });
     }
@@ -1539,9 +1547,11 @@ function loadHighScore() {
     }
     highScoreNodes.forEach(node => node.textContent = formattedMsg);
 
-    // Update global best text on Main Menu
+    // Update global best text on Main Menu (Separated UI)
     const bestTextEl = document.getElementById('globalBestTimeText');
-    if (bestTextEl) bestTextEl.textContent = formatTime(timeHigh) + (targetHigh > 0 ? ` / ${Math.floor(targetHigh)} T` : '');
+    const bestTargetEl = document.getElementById('globalBestTargetText');
+    if (bestTextEl) bestTextEl.textContent = formatTime(timeHigh);
+    if (bestTargetEl) bestTargetEl.textContent = targetHigh > 0 ? `${Math.floor(targetHigh)} T` : '0 T';
 }
 
 // renderProgressList removed — progress page deleted
@@ -2074,12 +2084,12 @@ function updateBot(dt) {
 
     entities.forEach(entity => {
         if (entity instanceof Target && !entity.collected) {
-            // Target Hunt Seeking
+            // Target Hunt Seeking (Kekuatan tarik diturunkan agak Bot tidak nekat/tantrum)
             const dx = entity.x - player.x;
             const dy = entity.y - player.y;
             const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-            // Bot berakselerasi besar ke arah target
-            const targetPull = 1200 + (botLevel * 600);
+            // Bot berakselerasi proporsional (max 400 strength agar tidak override Threat avoidance)
+            const targetPull = Math.min(400, 150 + (botLevel * 50));
             forceX += (dx / dist) * targetPull;
             forceY += (dy / dist) * targetPull;
         }
@@ -2158,8 +2168,8 @@ function updateBot(dt) {
     let targetVx = (forceX / forceMag) * botSpeed;
     let targetVy = (forceY / forceMag) * botSpeed;
 
-    // Smooth lerping dengan akselerasi tinggi yang mulus
-    const smoothing = Math.min(1.0, 0.15 * levelSpec.reactFast + (botLevel * 0.08));
+    // Smooth lerping dengan akselerasi yang diturunkan (mencegah kemudi terlalu patah/tantrum)
+    const smoothing = Math.min(0.8, 0.05 + 0.03 * botLevel);
     botVx += (targetVx - botVx) * smoothing;
     botVy += (targetVy - botVy) * smoothing;
 
