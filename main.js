@@ -1015,14 +1015,19 @@ function setMode(modeKey) {
         }
     }
 
+    const timeCont = document.getElementById('highScoreTimeContainer');
+    const targetCont = document.getElementById('highScoreTargetContainer');
+
     if (isCustom) {
         customPanel.classList.remove('hidden');
-        highScoreContainer.classList.add('hidden'); // no high scores in custom mode
+        if (timeCont) timeCont.classList.add('hidden');
+        if (targetCont) targetCont.classList.add('hidden');
         const pAch = document.getElementById('modeAchPanel');
         if (pAch) pAch.style.display = 'none';
     } else {
         customPanel.classList.add('hidden');
-        highScoreContainer.classList.remove('hidden');
+        if (timeCont) timeCont.classList.remove('hidden');
+        if (targetCont) targetCont.classList.remove('hidden');
         loadHighScore();
         updateModeStatsPanel(modeKey);
     }
