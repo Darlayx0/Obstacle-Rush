@@ -1538,7 +1538,6 @@ function getStoreKey() {
 }
 
 function saveHighScore() {
-    if (isBotPlaying) return;
     const key = getStoreKey();
     // Save time-based high score
     const currentTimeHigh = parseFloat(localStorage.getItem(key)) || 0;
@@ -1594,7 +1593,7 @@ function getAchStoreKey(modeKey, type) {
 }
 
 function checkAchievements() {
-    if (isBotPlaying || currentMode === 'custom') return;
+    if (currentMode === 'custom') return;
     const mode = MODES[currentMode];
     if (!mode || !mode.saveScore) return;
 
@@ -2122,12 +2121,12 @@ function updateBot(dt) {
 
     entities.forEach(entity => {
         if (entity instanceof Target && !entity.collected) {
-            // Target Hunt Seeking (Kekuatan tarik diturunkan agak Bot tidak nekat/tantrum)
+            // Target Hunt Seeking (Kekuatan diringankan maksimal agar Bot tidak memburu poin secara bunuh diri)
             const dx = entity.x - player.x;
             const dy = entity.y - player.y;
             const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-            // Bot berakselerasi proporsional (max 250 agar Threat Avoidance jauh lebih mendominasi)
-            const targetPull = Math.min(250, 100 + (botLevel * 25));
+            // Bot cukup memprioritaskan target secara aman (max 150 kekuatan)
+            const targetPull = Math.min(150, 70 + (botLevel * 15));
             forceX += (dx / dist) * targetPull;
             forceY += (dy / dist) * targetPull;
         }
@@ -2200,9 +2199,9 @@ function updateBot(dt) {
     }
 
     // Velocity normalizer
-    const maxSpeedBase = 500;
-    // Meningkatkan speed tapi diredam sedikit untuk menstabilkan kontrol di High Level
-    const botSpeed = maxSpeedBase * levelSpec.speedBoost * (1 + (botLevel - 1) * 0.15);
+    const maxSpeedBase = 400; // Dikurangi dari 500
+    // Speed ditingkatkan tapi dijaga ketat eksponensinya
+    const botSpeed = maxSpeedBase * levelSpec.speedBoost * (1 + (botLevel - 1) * 0.12);
     const forceMag = Math.sqrt(forceX * forceX + forceY * forceY) || 1;
     let targetVx = (forceX / forceMag) * botSpeed;
     let targetVy = (forceY / forceMag) * botSpeed;
@@ -2300,7 +2299,7 @@ function renderModeList(activeKey) {
     for (const [catName, modes] of Object.entries(categories)) {
         if (modes.length === 0) continue;
 
-        let gridCols = catName === 'Tantangan' ? 'grid-cols-2' : 'grid-cols-1';
+        let gridCols = 'grid-cols-2';
 
         html += `<div class="space-y-3">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">${catName}</h3>
@@ -2309,39 +2308,14 @@ function renderModeList(activeKey) {
         modes.forEach(mode => {
             const isActive = mode.key === activeKey;
             let btnClass = isActive
-                ? "mode-card glass-card active-mode p-4 rounded-xl flex items-center justify-between group w-full text-left relative overflow-hidden"
-                : "mode-card glass-card p-4 rounded-xl flex items-center justify-between group w-full text-left hover:scale-[1.02] opacity-80 hover:opacity-100";
+                ? "mode-card glass-card active-mode p-3 flex-col items-center justify-center gap-2 relative overflow-hidden aspect-video text-center rounded-xl flex group w-full"
+                : "mode-card glass-card p-3 flex-col items-center justify-center gap-2 relative overflow-hidden aspect-video text-center rounded-xl flex group hover:scale-[1.02] opacity-80 hover:opacity-100 w-full";
 
-            // For 'Tantangan' small square buttons
-            if (catName === 'Tantangan') {
-                btnClass = isActive
-                    ? "mode-card glass-card active-mode p-3 rounded-xl flex flex-col items-center justify-center gap-2 relative overflow-hidden aspect-video text-center w-full"
-                    : "mode-card glass-card p-3 rounded-xl flex flex-col items-center justify-center gap-2 group hover:scale-[1.02] aspect-video opacity-80 hover:opacity-100 text-center w-full";
-
-                html += `<button class="${btnClass}" data-mode="${mode.key}">`;
-                if (isActive) html += `<div class="absolute inset-0 bg-primary/10 transition-colors"></div>`;
-                html += `<span class="material-symbols-outlined text-2xl ${isActive ? 'text-primary drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]' : 'text-slate-400 group-hover:text-white transition-colors'}">${mode.icon}</span>`;
-                html += `<span class="font-display font-medium text-sm ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}">${mode.label}</span>`;
-                html += `</button>`;
-            } else {
-                // For long list buttons (Klasik, Eksperimental, Kustom)
-                html += `<button class="${btnClass}" data-mode="${mode.key}">`;
-                if (isActive) {
-                    html += `<div class="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
-                        <div class="relative z-10 flex items-center gap-4">
-                            <span class="w-1 h-8 rounded-full bg-primary shadow-[0_0_10px_rgba(56,189,248,0.8)]"></span>
-                            <span class="font-display font-semibold text-lg text-white tracking-wide">${mode.label}</span>
-                        </div>
-                        <div class="relative z-10 w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse-soft"></div>`;
-                } else {
-                    html += `<div class="flex items-center gap-4">
-                            <span class="w-1 h-8 rounded-full bg-white/10 group-hover:bg-primary/50 transition-colors"></span>
-                            <span class="font-display font-medium text-lg text-slate-300 group-hover:text-white transition-colors">${mode.label}</span>
-                        </div>
-                        <span class="material-symbols-outlined text-lg opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all text-slate-400">${mode.icon}</span>`;
-                }
-                html += `</button>`;
-            }
+            html += `<button class="${btnClass}" data-mode="${mode.key}">`;
+            if (isActive) html += `<div class="absolute inset-0 bg-primary/10 transition-colors"></div>`;
+            html += `<span class="material-symbols-outlined text-2xl ${isActive ? 'text-primary drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]' : 'text-slate-400 group-hover:text-white transition-colors'}">${mode.icon}</span>`;
+            html += `<span class="font-display font-medium text-[0.8rem] leading-tight ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}">${mode.label}</span>`;
+            html += `</button>`;
         });
 
         html += `</div></div>`;
